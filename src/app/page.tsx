@@ -23,6 +23,7 @@ export default async function Home() {
             <h1 className="text-2xl">{APP_NAME}</h1>
           </CardTitle>
           <CardDescription>{APP_PURPOSE}</CardDescription>
+          <p className="text-sm">Hello, world 👋</p>
         </CardHeader>
         <CardFooter>
           <Link
