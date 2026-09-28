@@ -34,7 +34,7 @@ A personal wardrobe app where the user uploads photos of the clothing she owns, 
 
 | ID   | Requirement                                                                                                                                      |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AU-1 | Each user has a private account and signs in with an email magic link (see `PROJECT_SPEC.md` Phase 2).                                           |
+| AU-1 | Each user has a private account and signs in with email and password (see `PROJECT_SPEC.md` Phase 2). Email confirmation is off for the MVP.     |
 | AU-2 | Each user sees only her own clothing, outfits, plans and images. This is enforced by row-level security and private storage, not only in the UI. |
 | AU-3 | Data persists across refreshes, devices and sessions.                                                                                            |
 
