@@ -1,41 +1,61 @@
 "use server";
 
-import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ActionState } from "@/lib/action-state";
 import { createClient } from "@/lib/supabase/server";
-import { magicLinkSchema } from "@/lib/validation/auth";
+import { signInSchema, signUpSchema } from "@/lib/validation/auth";
 
-export async function sendMagicLink(
+/** Signs in, or creates an account when the form's `intent` is "signup". */
+export async function authenticate(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = magicLinkSchema.safeParse({
+  const signUp = formData.get("intent") === "signup";
+  const parsed = (signUp ? signUpSchema : signInSchema).safeParse({
     email: formData.get("email"),
+    password: formData.get("password"),
     next: formData.get("next") ?? undefined,
   });
   if (!parsed.success) {
     return { status: "error", message: parsed.error.issues[0].message };
   }
-
-  const origin = (await headers()).get("origin");
-  if (!origin) {
-    return { status: "error", message: "Could not determine the site URL." };
-  }
-
-  const callback = new URL("/auth/callback", origin);
-  callback.searchParams.set("next", parsed.data.next);
+  const { email, password, next } = parsed.data;
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-    options: { emailRedirectTo: callback.toString() },
-  });
-  if (error) {
-    return { status: "error", message: error.message };
+
+  if (signUp) {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      return {
+        status: "error",
+        message:
+          error.code === "user_already_exists"
+            ? "An account with that email already exists. Sign in instead."
+            : error.message,
+      };
+    }
+    // No session means the project still requires email confirmation.
+    if (!data.session) {
+      return {
+        status: "success",
+        message: `Check ${email} to confirm your account, then sign in.`,
+      };
+    }
+  } else {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      return {
+        status: "error",
+        message:
+          error.code === "invalid_credentials"
+            ? "Incorrect email or password."
+            : error.message,
+      };
+    }
   }
 
-  return {
-    status: "success",
-    message: `Check ${parsed.data.email} for your sign-in link.`,
-  };
+  redirect(next);
 }

@@ -30,9 +30,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <CardTitle>
             <h1 className="text-xl">Sign in</h1>
           </CardTitle>
-          <CardDescription>
-            We&apos;ll email you a link — no password needed.
-          </CardDescription>
+          <CardDescription>Use your email and password.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {params.error === "link" && (

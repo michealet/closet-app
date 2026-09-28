@@ -97,11 +97,11 @@
    - A `public.profiles` table (`id uuid pk references auth.users on delete cascade`, `display_name text`, `created_at timestamptz default now()`).
    - Row-level security enabled, with policies so a user can select and update only their own row.
    - A trigger that creates a profile row when a user signs up.
-4. Build authentication: email magic-link sign-in at `/login`, an auth callback route, sign-out, and a protected `/account` page that shows and edits `display_name`.
+4. Build authentication: email + password sign-in and sign-up at `/login` (email confirmation off), an auth callback route (for future email links or OAuth), sign-out, and a protected `/account` page that shows and edits `display_name`.
 5. Create `.env.example` containing `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (never the service-role key).
 6. Generate the types into `src/types/database.ts`.
 
-**Checks:** `supabase start`, `supabase db reset` and `pnpm dev`. Sign in locally through the magic link, which appears in the Inbucket/Mailpit URL printed by the CLI, then edit the profile.
+**Checks:** `supabase start`, `supabase db reset` and `pnpm dev`. Create an account locally with an email and password, sign out and back in, then edit the profile.
 
 ### Phase 3 — Tests
 
@@ -202,7 +202,7 @@ Write a README that covers:
 3. Add `{{MAYA_GITHUB}}` as a collaborator with Write access.
 4. **Supabase:** create the project (free tier). Record the project ref, URL and anon key. Create a personal access token.
 5. **GitHub secrets** (on the `production` environment): `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF`. Add yourself as the required reviewer.
-6. **Supabase Auth settings:** set the Site URL to the production URL, and add `https://*-{{GITHUB_OWNER}}.vercel.app/**` and `http://localhost:3000/**` to the redirect URLs.
+6. **Supabase Auth settings:** turn off **Confirm email** (Authentication → Sign In / Providers → Email), set the Site URL to the production URL, and add `https://*-{{GITHUB_OWNER}}.vercel.app/**` and `http://localhost:3000/**` to the redirect URLs.
 7. **Vercel:** import the repo. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for Production and Preview. Confirm that a PR produces a preview URL.
 8. Optional: install the Claude GitHub App so `@claude` can review PRs.
 
@@ -214,7 +214,7 @@ Write a README that covers:
 
 ## 6. Definition of done (bootstrap)
 
-- [ ] Local: sign in with a magic link, edit the profile, and confirm RLS is enforced.
+- [ ] Local: sign up and sign in with email + password, edit the profile, and confirm RLS is enforced.
 - [ ] CI is green on a PR, and all three jobs are required on `main`.
 - [ ] Every PR gets a Vercel preview URL, and production deploys on merge.
 - [ ] Migrations reach production only through `db-migrate.yml`, with approval.
