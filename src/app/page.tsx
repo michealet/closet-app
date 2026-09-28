@@ -1,12 +1,20 @@
-import { APP_NAME, APP_PURPOSE } from "@/lib/app-config";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { APP_NAME, APP_PURPOSE } from "@/lib/app-config";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const signedIn = Boolean(data?.claims);
+
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <Card className="w-full max-w-md">
@@ -16,6 +24,14 @@ export default function Home() {
           </CardTitle>
           <CardDescription>{APP_PURPOSE}</CardDescription>
         </CardHeader>
+        <CardFooter>
+          <Link
+            href={signedIn ? "/account" : "/login"}
+            className={buttonVariants({ size: "lg", className: "w-full" })}
+          >
+            {signedIn ? "Your account" : "Sign in"}
+          </Link>
+        </CardFooter>
       </Card>
     </main>
   );
