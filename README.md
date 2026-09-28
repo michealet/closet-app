@@ -11,21 +11,25 @@ DCOP turns your wardrobe into a searchable digital closet. Photograph and tag yo
 ## Planned Features
 
 ### Digital Closet
+
 - Add items with a photo, category, color, brand, size, season, and custom tags
 - Browse, search, and filter the whole wardrobe
 - Track wear history, including when each item was last worn and how often
 
 ### Outfit Builder
+
 - Combine items into saved outfits
 - Tag outfits by occasion (work, casual, formal, travel, etc.)
 - Mark favorites and reuse past looks
 
 ### Outfit Planning
+
 - Calendar view for scheduling outfits by day
 - Packing lists for trips built from planned outfits
 - Weather-aware suggestions (stretch goal)
 
 ### Insights (stretch goals)
+
 - Most- and least-worn items
 - Cost-per-wear tracking
 - Donation or resale suggestions for items that rarely get worn

@@ -6,12 +6,12 @@
 
 ## 0. Placeholders — fill in before starting
 
-| Placeholder | Value |
-|---|---|
-| `{{APP_NAME}}` | _TBD (kebab-case repo name)_ |
-| `{{APP_PURPOSE}}` | _One sentence: what the app does and who it's for_ |
-| `{{GITHUB_OWNER}}` | _Micheale's GitHub username/org_ |
-| `{{MAYA_GITHUB}}` | _Maya's GitHub username_ |
+| Placeholder        | Value                                              |
+| ------------------ | -------------------------------------------------- |
+| `{{APP_NAME}}`     | _TBD (kebab-case repo name)_                       |
+| `{{APP_PURPOSE}}`  | _One sentence: what the app does and who it's for_ |
+| `{{GITHUB_OWNER}}` | _Micheale's GitHub username/org_                   |
+| `{{MAYA_GITHUB}}`  | _Maya's GitHub username_                           |
 
 ---
 
@@ -25,19 +25,19 @@
 
 ## 2. Stack (fixed — do not substitute)
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js (latest stable, App Router), TypeScript `strict` |
-| Package manager | pnpm (pin the version with the `packageManager` field) |
-| Node | Current LTS, pinned in `.nvmrc` and `engines` |
-| UI | Tailwind CSS + shadcn/ui |
+| Layer               | Choice                                                                           |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Framework           | Next.js (latest stable, App Router), TypeScript `strict`                         |
+| Package manager     | pnpm (pin the version with the `packageManager` field)                           |
+| Node                | Current LTS, pinned in `.nvmrc` and `engines`                                    |
+| UI                  | Tailwind CSS + shadcn/ui                                                         |
 | Backend / DB / Auth | Supabase (Postgres, Auth, Storage) via `@supabase/supabase-js` + `@supabase/ssr` |
-| Validation | Zod |
-| Unit tests | Vitest + Testing Library |
-| E2E tests | Playwright (smoke tests only at first) |
-| Lint / format | ESLint (Next config) + Prettier |
-| Hosting | Vercel (Hobby tier to start); preview deploy per PR |
-| CI | GitHub Actions |
+| Validation          | Zod                                                                              |
+| Unit tests          | Vitest + Testing Library                                                         |
+| E2E tests           | Playwright (smoke tests only at first)                                           |
+| Lint / format       | ESLint (Next config) + Prettier                                                  |
+| Hosting             | Vercel (Hobby tier to start); preview deploy per PR                              |
+| CI                  | GitHub Actions                                                                   |
 
 ## 3. Repo structure
 
@@ -79,6 +79,7 @@
 ## 4. Phases
 
 ### Phase 1 — Scaffold the app
+
 1. Initialize Next.js with TypeScript, Tailwind, ESLint, App Router and a `src/` directory, using pnpm.
 2. Add Prettier (with the Tailwind plugin), and set `strict: true` plus the `@/*` path alias in `tsconfig`.
 3. Initialize shadcn/ui and add `button`, `input`, `card`, `label` and `sonner`.
@@ -89,6 +90,7 @@
 **Checks:** `pnpm lint && pnpm typecheck && pnpm build` all pass.
 
 ### Phase 2 — Supabase integration
+
 1. Run `supabase init`. Configure local development through the Supabase CLI (Docker).
 2. Create `src/lib/supabase/{server,client,middleware}.ts` following the current official `@supabase/ssr` Next.js pattern, and add the root `middleware.ts` for session refresh.
 3. Write the first migration, `…_init.sql`:
@@ -102,6 +104,7 @@
 **Checks:** `supabase start`, `supabase db reset` and `pnpm dev`. Sign in locally through the magic link, which appears in the Inbucket/Mailpit URL printed by the CLI, then edit the profile.
 
 ### Phase 3 — Tests
+
 1. Set up Vitest. Add one unit test for a Zod schema and one component test.
 2. Set up Playwright. Add a smoke test that loads the home page and gets 200 from `/api/health`.
 3. Add a SQL test or script that checks row-level security: user A cannot read user B's profile.
@@ -109,24 +112,29 @@
 **Checks:** `pnpm test` and `pnpm test:e2e` pass locally.
 
 ### Phase 4 — Shared AI rules
+
 Create **`AGENTS.md`** with this content, filling in the placeholders:
 
 ```markdown
 # AGENTS.md — rules for all AI coding agents (Codex, Claude)
 
 ## Project
+
 {{APP_NAME}} — {{APP_PURPOSE}}
 
 ## Stack (do not change without an ADR in docs/decisions/)
+
 Next.js App Router + TypeScript strict, pnpm, Tailwind + shadcn/ui, Supabase, Zod, Vitest, Playwright.
 
 ## Workflow
+
 - Every change is a PR from a branch named `feat/<issue#>-short-name` or `fix/<issue#>-short-name`.
 - One feature per PR. Keep PRs small (aim < 400 changed lines).
 - Link the issue in the PR description ("Closes #N") and fill in the PR template.
 - A PR must pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
 
 ## Code rules
+
 - Use Server Components by default; add "use client" only when needed.
 - Data access goes through `src/lib/supabase/*`. Never create ad-hoc clients.
 - Validate all user input and API payloads with Zod (`src/lib/validation`).
@@ -135,6 +143,7 @@ Next.js App Router + TypeScript strict, pnpm, Tailwind + shadcn/ui, Supabase, Zo
 - Add or update tests for any logic you add.
 
 ## Hard "do not touch" rules (owned by DevOps — request changes in the PR description instead)
+
 - `supabase/migrations/**` — schema changes: describe the change needed; DevOps writes the migration.
 - `.github/**`, `middleware.ts`, `src/lib/supabase/**`, `next.config.*`, `package.json` scripts/engines.
 - Never commit secrets, `.env*` files (except `.env.example`), or the Supabase service-role key.
@@ -148,12 +157,14 @@ Create **`CLAUDE.md`**:
 @AGENTS.md
 
 ## DevOps notes (Claude only)
+
 - You may modify DevOps-owned paths when Micheale asks.
 - Schema changes: `supabase migration new <name>` → write SQL (with RLS) → `supabase db reset` → `pnpm db:types` → commit both.
 - When reviewing Codex PRs: check AGENTS.md compliance, security (RLS, input validation, secrets), and test coverage first.
 ```
 
 ### Phase 5 — GitHub automation
+
 1. **`ci.yml`** runs on every pull request and on pushes to `main`. It uses pnpm caching and the Node version from `.nvmrc`.
    - **quality** job: install (frozen lockfile), `format:check`, `lint`, `typecheck`, `test`, `build`, using dummy public Supabase environment values for the build.
    - **db** job: `supabase/setup-cli`, `supabase start`, `supabase db reset` to prove the migrations apply cleanly, then the RLS test, then a check that the generated types match the committed `database.ts` (fail if they differ).
@@ -167,7 +178,9 @@ Create **`CLAUDE.md`**:
 6. **`dependabot.yml`**: weekly updates for npm and github-actions, grouping minor and patch updates.
 
 ### Phase 6 — README
+
 Write a README that covers:
+
 - The project summary and the two roles.
 - **Micheale's local setup:** prerequisites (Node LTS, pnpm, Docker, Supabase CLI), then `pnpm i`, `supabase start`, `cp .env.example .env.local` and `pnpm dev`.
 - **Maya's workflow:** write an Issue from the template, ask Codex to implement it ("Implement issue #N following AGENTS.md"), open the PR, test on the Vercel preview URL, and leave a review comment.
@@ -179,6 +192,7 @@ Write a README that covers:
 ## 5. Manual steps (humans — Claude should list these, not attempt them)
 
 **Micheale**
+
 1. Create the private repo `{{GITHUB_OWNER}}/{{APP_NAME}}` and push `main`.
 2. Set the branch protection rules on `main`:
    - Require a PR with 1 approval.
@@ -193,11 +207,13 @@ Write a README that covers:
 8. Optional: install the Claude GitHub App so `@claude` can review PRs.
 
 **Maya**
+
 1. Create a GitHub account and accept the repo invite.
 2. In ChatGPT, connect GitHub to Codex and give it access to this repo only.
 3. First PR, to test the workflow: ask Codex to "Change the home page tagline, following AGENTS.md." Confirm that CI runs, the preview URL works and the PR merges.
 
 ## 6. Definition of done (bootstrap)
+
 - [ ] Local: sign in with a magic link, edit the profile, and confirm RLS is enforced.
 - [ ] CI is green on a PR, and all three jobs are required on `main`.
 - [ ] Every PR gets a Vercel preview URL, and production deploys on merge.
@@ -205,4 +221,5 @@ Write a README that covers:
 - [ ] `AGENTS.md` and `CLAUDE.md` exist, and Maya's first Codex PR has merged successfully.
 
 ## 7. Out of scope (for now)
+
 Payments, email other than auth emails, analytics, custom domain, a staging Supabase project (add one when real users arrive), and upgrading to paid tiers.
