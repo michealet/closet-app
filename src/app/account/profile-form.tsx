@@ -22,6 +22,9 @@ export function ProfileForm({ displayName }: { displayName: string }) {
       <div className="flex flex-col gap-2">
         <Label htmlFor="display_name">Display name</Label>
         <Input
+          // Remount when the saved value changes so Base UI's uncontrolled
+          // defaultValue isn't swapped after init.
+          key={displayName}
           id="display_name"
           name="display_name"
           defaultValue={displayName}
