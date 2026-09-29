@@ -1,0 +1,9 @@
+# Micheale reviews everything; the paths below are DevOps-owned (see AGENTS.md).
+*                    @michealet
+
+/supabase/           @michealet
+/.github/            @michealet
+/src/lib/supabase/   @michealet
+/src/proxy.ts        @michealet
+/AGENTS.md           @michealet
+/CLAUDE.md           @michealet

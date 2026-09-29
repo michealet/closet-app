@@ -1,0 +1,53 @@
+name: Feature
+description: A new feature or change to an existing one
+labels: ["feature"]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      description: Who wants what, and why.
+      placeholder: As a … I want … so that …
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: A checklist. Each item should be something you can check on the preview URL.
+      value: |
+        - [ ] 
+        - [ ]
+    validations:
+      required: true
+  - type: input
+    id: frd
+    attributes:
+      label: FRD requirement IDs
+      description: From docs/specs/FRD.md, if any (e.g. AC-1, CL-2).
+  - type: textarea
+    id: ui
+    attributes:
+      label: UI notes or screenshots
+      description: Sketches, screenshots or links to examples. You can paste images here.
+  - type: dropdown
+    id: schema
+    attributes:
+      label: Does this need new data stored (a database change)?
+      description: If yes, Micheale adds the database change first, in its own PR.
+      options:
+        - "No"
+        - "Yes — described below"
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: schema-details
+    attributes:
+      label: Data needed
+      description: What new information needs saving, and who can see or change it.
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Anything this issue deliberately does not include.
