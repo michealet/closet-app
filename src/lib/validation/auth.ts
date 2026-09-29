@@ -11,7 +11,12 @@ export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
 
 export const signInSchema = z.object({
-  email: z.email("Enter a valid email address").trim().toLowerCase(),
+  // Trim before validating: z.email() checks the raw string first otherwise.
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .pipe(z.email("Enter a valid email address")),
   password: z.string().min(1, "Enter your password"),
   next: redirectPathSchema,
 });
