@@ -21,7 +21,10 @@ export default defineConfig({
   ],
   webServer: {
     // CI tests the production build; locally, reuse a running `pnpm dev`.
-    command: CI ? "pnpm build && pnpm start" : "pnpm dev",
+    // Call `next` directly (it's on PATH under `pnpm test:e2e`): pnpm runs
+    // scripts in their own process group, so Playwright can't stop them and
+    // hangs after the tests finish.
+    command: CI ? "next build && next start" : "next dev",
     url: `${baseURL}/api/health`,
     reuseExistingServer: !CI,
     timeout: 180_000,
