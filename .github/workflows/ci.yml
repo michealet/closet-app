@@ -77,7 +77,8 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      # WebKit runs the image tests in Safari's engine (no WebP encoding; ADR 0002).
+      - run: pnpm exec playwright install --with-deps chromium webkit
       # playwright.config.ts builds and starts the app when CI is set.
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
