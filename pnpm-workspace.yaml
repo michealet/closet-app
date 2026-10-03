@@ -1,3 +1,5 @@
 allowBuilds:
+  # esbuild works without its postinstall (used only to bundle code for e2e tests).
+  esbuild: false
   sharp: false
   unrs-resolver: false

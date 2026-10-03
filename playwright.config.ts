@@ -18,6 +18,12 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     // The app is phone-first; Pixel runs on Chromium, so no extra browser install.
     { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Safari's engine, for browser differences such as WebP encoding (ADR 0002).
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+      testMatch: /images\.spec\.ts/,
+    },
   ],
   webServer: {
     // CI tests the production build; locally, reuse a running `pnpm dev`.
