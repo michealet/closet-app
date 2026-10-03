@@ -35,6 +35,10 @@ Maya needs no local setup.
 
 > Previews and production share **one database**, so anything you create while testing a preview is real data. Use a test account.
 
+### Questions and decisions
+
+Product questions go on GitHub, not chat. Use the **Question** issue template; it's assigned to Maya and labelled `question` (filter: `is:open label:question`). Answer in a comment; whoever asked records the answer (FRD, ADR or the linked issue) and closes it.
+
 ### One-time Codex setup
 
 Codex works in its own cloud environment. In Codex's environment settings for this repo:

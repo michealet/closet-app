@@ -1,0 +1,47 @@
+name: Question
+description: A product question or decision for Maya (or anyone) to answer here instead of offline
+title: "Question: "
+labels: ["question"]
+assignees: ["mayatp2331"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Answer in a comment below. Whoever asked closes the issue once the answer is recorded (in the FRD, an ADR or the linked issue).
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: One question per issue, phrased so it can be answered directly.
+      placeholder: Should an item have one color or several?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why it matters, and what depends on the answer.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options
+      description: The choices, with a recommendation if you have one.
+      placeholder: |
+        1. One color (recommended): simpler filters; "Multi/Pattern" covers mixed items.
+        2. Several colors: more accurate, but harder to change later.
+  - type: dropdown
+    id: blocking
+    attributes:
+      label: Is work waiting on this?
+      options:
+        - "No — answer when convenient"
+        - "Yes — blocks a feature or PR (link it below)"
+    validations:
+      required: true
+  - type: input
+    id: related
+    attributes:
+      label: Related
+      description: FRD requirement IDs, issues or PRs (e.g. FRD §19, AC-6, #12).
