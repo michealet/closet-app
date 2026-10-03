@@ -12,14 +12,14 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
 
-export const metadata: Metadata = { title: "Account" };
+export const metadata: Metadata = { title: "Profile" };
 
-export default async function AccountPage() {
+export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
   const claims = auth?.claims;
   // src/proxy.ts already redirects signed-out users; this is defense in depth.
-  if (!claims) redirect("/login?next=/account");
+  if (!claims) redirect("/login?next=/profile");
 
   const { data: profile, error } = await supabase
     .from("profiles")
@@ -29,11 +29,11 @@ export default async function AccountPage() {
   if (error) throw new Error("Could not load your profile.");
 
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <div className="mx-auto w-full max-w-md">
+      <Card>
         <CardHeader>
           <CardTitle>
-            <h1 className="text-xl">Account</h1>
+            <h1 className="text-2xl">Profile</h1>
           </CardTitle>
           <CardDescription>Signed in as {claims.email}</CardDescription>
         </CardHeader>
@@ -53,6 +53,6 @@ export default async function AccountPage() {
           </form>
         </CardFooter>
       </Card>
-    </main>
+    </div>
   );
 }

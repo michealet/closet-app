@@ -14,6 +14,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       // Light only for the MVP; don't follow the OS dark mode.
       theme="light"
+      // Top, so toasts never cover the phone tab bar.
+      position="top-center"
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,

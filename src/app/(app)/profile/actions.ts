@@ -37,6 +37,8 @@ export async function updateProfile(
     };
   }
 
-  revalidatePath("/account");
+  revalidatePath("/profile");
+  // Home greets the user by name (HM-1).
+  revalidatePath("/");
   return { status: "success", message: "Profile saved." };
 }

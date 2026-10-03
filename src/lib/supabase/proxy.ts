@@ -3,8 +3,19 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 import { supabaseAnonKey, supabaseUrl } from "./env";
 
-/** Routes that require a signed-in user. */
-const PROTECTED_PREFIXES = ["/account"];
+/**
+ * Routes anyone can open. Everything else requires a signed-in user, so new
+ * pages are private by default (this file is DevOps-owned; see AGENTS.md).
+ */
+const PUBLIC_PATHS = ["/login", "/api/health"];
+const PUBLIC_PREFIXES = ["/auth/"];
+
+export function isPublicPath(pathname: string): boolean {
+  return (
+    PUBLIC_PATHS.includes(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  );
+}
 
 /**
  * Refreshes the Supabase auth session cookie on every request and redirects
@@ -43,11 +54,11 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims;
 
   const { pathname } = request.nextUrl;
-  if (!user && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
+  if (!user && !isPublicPath(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
-    url.searchParams.set("next", pathname);
+    url.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
