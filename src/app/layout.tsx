@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import { APP_NAME, APP_PURPOSE } from "@/lib/app-config";
+import { APP_DISPLAY_NAME, APP_PURPOSE } from "@/lib/app-config";
 import "./globals.css";
 
 // FRD DS-4: an elegant serif for headings, a clean sans-serif for body text.
@@ -21,9 +21,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
+  title: { default: APP_DISPLAY_NAME, template: `%s · ${APP_DISPLAY_NAME}` },
   description: APP_PURPOSE,
 };
+
+// Lets the phone tab bar sit above the iPhone home indicator (safe-area insets).
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

@@ -20,8 +20,8 @@ describe("redirectPathSchema", () => {
     "/\\evil.example",
     "closet",
     undefined,
-  ])("falls back to /account for %s", (value) => {
-    expect(redirectPathSchema.parse(value)).toBe("/account");
+  ])("falls back to / for %s", (value) => {
+    expect(redirectPathSchema.parse(value)).toBe("/");
   });
 });
 
@@ -32,7 +32,7 @@ describe("signInSchema", () => {
       password: "x",
     });
     expect(result.email).toBe("maya@example.com");
-    expect(result.next).toBe("/account");
+    expect(result.next).toBe("/");
   });
 
   it("requires a password", () => {

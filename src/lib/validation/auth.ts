@@ -4,7 +4,7 @@ import { z } from "zod";
 export const redirectPathSchema = z
   .string()
   .regex(/^\/(?![/\\])/, "Must be a relative path")
-  .catch("/account");
+  .catch("/");
 
 export const PASSWORD_MIN = 8;
 /** Supabase (bcrypt) ignores anything past 72 bytes. */
