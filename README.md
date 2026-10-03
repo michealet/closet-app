@@ -24,7 +24,9 @@ Next.js 16 (App Router, TypeScript strict) · pnpm 12 · Node 24 · Tailwind CSS
 
 ## Maya's guide
 
-Everything you need happens in your browser (or the GitHub phone app). You never need to install anything.
+Everything you need happens in your browser or on your phone: **ChatGPT** (website or app) for Codex, and **GitHub** (website or app) for everything else. You never need the command line or to install anything.
+
+**New to Codex?** Start with the step-by-step [ChatGPT & Codex tutorial](docs/guides/chatgpt-codex.md): setup, a practice task, and messages you can copy.
 
 ### The pieces, in plain words
 
@@ -51,9 +53,11 @@ Everything you need happens in your browser (or the GitHub phone app). You never
 
 ### 2. Have Codex build it
 
-1. Open Codex in ChatGPT and pick the **closet-app** repository.
+1. Open Codex in ChatGPT (website or phone app) and pick the **closet-app** repository.
 2. Type: **"Implement issue #14 following AGENTS.md."** (use your issue's number)
 3. When Codex has finished, use its button to **create a pull request**.
+
+More examples, and what to do if Codex gets stuck, are in the [ChatGPT & Codex tutorial](docs/guides/chatgpt-codex.md).
 
 ### 3. Wait for the checks
 
@@ -114,7 +118,7 @@ You don't need to close it. Micheale closes it once your answer is built in. To 
 
 ### One-time Codex setup (do this together with Micheale)
 
-Codex works in its own cloud environment. In Codex's environment settings for this repository:
+Step-by-step instructions are in the [ChatGPT & Codex tutorial](docs/guides/chatgpt-codex.md#one-time-setup-about-15-minutes-with-micheale). In short, Codex works in its own cloud environment; in Codex's environment settings for this repository:
 
 - **Setup script:** `npm i -g pnpm@12 && pnpm install --frozen-lockfile` (Node 24). Don't rely on corepack; it can't install pnpm 12.
 - **Environment variables** (dummy values are fine; Codex never talks to the real database):
