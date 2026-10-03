@@ -1,6 +1,11 @@
-# Micheale reviews everything; the paths below are DevOps-owned (see AGENTS.md).
-*                    @michealet
+# Who must approve a PR (branch protection requires one code owner).
+# The last matching pattern wins.
 
+# App code, docs and everything else: either of us. Maya approves Micheale's
+# PRs and Micheale approves Maya's (authors can't approve their own).
+*                    @michealet @mayatp2331
+
+# DevOps-owned (see AGENTS.md): Micheale only.
 /supabase/           @michealet
 /.github/            @michealet
 /src/lib/supabase/   @michealet
