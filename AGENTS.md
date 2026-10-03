@@ -58,6 +58,14 @@ Unit and component tests sit next to the code they test as `*.test.ts` / `*.test
 - No new dependencies without explaining why in the PR description.
 - Add or update tests for any logic you add.
 
+## Data and storage
+
+- Tables: `clothing_items`, `outfits`, `outfit_items` (canvas layout, 0–1 coordinates), `planned_outfits`. Types come from `src/types/database.ts`; labels for the fixed lists from `src/lib/constants.ts`.
+- Don't pass `user_id` on insert; the database fills it in from the signed-in user.
+- Images go in the private `closet` bucket under the owner's folder: `{user_id}/items/{item_id}.webp`, `{user_id}/items/{item_id}_thumb.webp`, `{user_id}/outfits/{outfit_id}.webp`. WebP or JPEG, at most 5 MB.
+- Show images with short-lived signed URLs (`createSignedUrls` for grids), never public URLs. Use thumbnails in grids and cards.
+- When deleting an item or outfit, also delete its files from storage. Deleting the row doesn't remove them.
+
 ## UI rules (FRD §14–15)
 
 - Mobile-first; tap targets at least 44px; works one-handed on a phone.

@@ -209,6 +209,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 | seasons                 | `season[]`                  | Spring/Summer/Fall/Winter              |
 | notes                   | text, null                  | ≤ 500 chars                            |
 | image_path              | text, required              | Supabase Storage path (original)       |
+| thumbnail_path          | text, null                  | small version for grids (NF-2)         |
 | image_processed_path    | text, null                  | **future:** background-removed version |
 | is_favorite             | boolean, default false      |                                        |
 | created_at / updated_at | timestamptz                 |                                        |
@@ -251,7 +252,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 
 ### Storage
 
-- A private bucket `closet` with paths `{user_id}/items/{item_id}.webp` and `{user_id}/outfits/{outfit_id}.webp`.
+- A private bucket `closet` with paths `{user_id}/items/{item_id}.webp`, `{user_id}/items/{item_id}_thumb.webp` and `{user_id}/outfits/{outfit_id}.webp`. Supabase's on-the-fly image resizing needs a paid plan, so thumbnails are made on the device at upload time.
 - Storage policies: users can read and write only under their own `{user_id}/` prefix. Images are shown through short-lived signed URLs.
 
 ---
