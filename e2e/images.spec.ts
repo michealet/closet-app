@@ -3,8 +3,10 @@ import { build } from "esbuild";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Runs src/lib/images/prepare.ts in real browsers (jsdom has no canvas):
- * Chromium encodes WebP; WebKit (Safari) can't, so it must fall back to JPEG.
+ * Runs src/lib/images/prepare.ts in real browsers (jsdom has no canvas).
+ * Chromium encodes WebP. Whether WebKit can depends on the platform: Safari
+ * on macOS/iOS can't, Linux WebKit (CI) can. So tests check what the browser
+ * reports, and the JPEG fallback is forced in its own tests.
  */
 
 let bundle: string;
@@ -23,6 +25,8 @@ test.beforeAll(async () => {
 });
 
 type Probe = {
+  /** Whether this browser reported it can encode WebP. */
+  webp: boolean;
   width: number;
   height: number;
   fullType: string;
@@ -46,8 +50,23 @@ async function prepare(
     type: string;
   },
   points: [number, number][] = [],
+  { noWebp = false }: { noWebp?: boolean } = {},
 ): Promise<Probe> {
   await page.setContent("<!doctype html><title>images</title>");
+  if (noWebp) {
+    // Behave like Safari on macOS/iOS: asking for WebP returns a PNG.
+    await page.evaluate(() => {
+      const toBlob = HTMLCanvasElement.prototype.toBlob;
+      HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+        return toBlob.call(
+          this,
+          callback,
+          type === "image/webp" ? "image/png" : type,
+          quality,
+        );
+      };
+    });
+  }
   await page.addScriptTag({ content: bundle });
   return page.evaluate(
     async ({ file, points }) => {
@@ -68,11 +87,12 @@ async function prepare(
         );
       }
       // @ts-expect-error -- global from the esbuild bundle
-      const { prepareImage } = window.Images;
+      const { prepareImage, canEncodeWebp } = window.Images;
       const result = await prepareImage(
         new File([blob], file.name, { type: blob.type }),
       );
 
+      const webp: boolean = await canEncodeWebp();
       const read = async (b: Blob) => createImageBitmap(b);
       const full = await read(result.full);
       const thumb = await read(result.thumb);
@@ -91,6 +111,7 @@ async function prepare(
         pixels[`${px},${py}`] = Array.from(ctx.getImageData(x, y, 1, 1).data);
       }
       return {
+        webp,
         width: result.width,
         height: result.height,
         fullType: result.full.type,
@@ -108,34 +129,40 @@ async function prepare(
 const isRed = ([r, g, b]: number[]) => r > 150 && g < 120 && b < 120;
 const isBlue = ([r, , b]: number[]) => b > 150 && r < 120;
 
+const bigPhoto = {
+  name: "big.png",
+  type: "image/png",
+  width: 4032,
+  height: 3024,
+  draw: "ctx.fillStyle='#d24';ctx.fillRect(0,0,w,h)",
+};
+
 test("shrinks a large photo to 1600px and a 600px thumbnail", async ({
   page,
   browserName,
 }) => {
-  const out = await prepare(page, {
-    name: "big.png",
-    type: "image/png",
-    width: 4032,
-    height: 3024,
-    draw: "ctx.fillStyle='#d24';ctx.fillRect(0,0,w,h)",
-  });
+  const out = await prepare(page, bigPhoto);
 
   expect(out.fullSize).toEqual([1600, 1200]);
   expect(out.thumbSize).toEqual([600, 450]);
   expect([out.width, out.height]).toEqual([1600, 1200]);
-  if (browserName === "webkit") {
-    expect([out.ext, out.fullType, out.thumbType]).toEqual([
-      "jpg",
-      "image/jpeg",
-      "image/jpeg",
-    ]);
-  } else {
-    expect([out.ext, out.fullType, out.thumbType]).toEqual([
-      "webp",
-      "image/webp",
-      "image/webp",
-    ]);
-  }
+  if (browserName === "chromium") expect(out.webp).toBe(true);
+  const [ext, type] = out.webp ? ["webp", "image/webp"] : ["jpg", "image/jpeg"];
+  expect([out.ext, out.fullType, out.thumbType]).toEqual([ext, type, type]);
+});
+
+test("falls back to JPEG where WebP can't be encoded (Safari)", async ({
+  page,
+}) => {
+  const out = await prepare(page, bigPhoto, [], { noWebp: true });
+
+  expect(out.webp).toBe(false);
+  expect([out.ext, out.fullType, out.thumbType]).toEqual([
+    "jpg",
+    "image/jpeg",
+    "image/jpeg",
+  ]);
+  expect(out.fullSize).toEqual([1600, 1200]);
 });
 
 test("never enlarges a small photo", async ({ page }) => {
@@ -151,28 +178,28 @@ test("never enlarges a small photo", async ({ page }) => {
   expect(out.thumbSize).toEqual([320, 200]);
 });
 
+const cutout = {
+  name: "cutout.png",
+  type: "image/png",
+  width: 400,
+  height: 400,
+  draw: "ctx.fillStyle='#d24';ctx.fillRect(100,100,200,200)",
+};
+
 test("gives transparent areas a white background when saving JPEG", async ({
   page,
-  browserName,
 }) => {
-  const out = await prepare(
-    page,
-    {
-      name: "cutout.png",
-      type: "image/png",
-      width: 400,
-      height: 400,
-      draw: "ctx.fillStyle='#d24';ctx.fillRect(100,100,200,200)",
-    },
-    [[5, 5]],
-  );
+  const out = await prepare(page, cutout, [[5, 5]], { noWebp: true });
 
-  const corner = out.pixels["5,5"];
-  if (browserName === "webkit") {
-    expect(corner.slice(0, 3).every((v) => v > 245)).toBe(true); // white, not black
-  } else {
-    expect(corner[3]).toBe(0); // WebP keeps transparency
-  }
+  const [r, g, b] = out.pixels["5,5"];
+  expect([r, g, b].every((v) => v > 245)).toBe(true); // white, not black
+});
+
+test("keeps transparency when saving WebP", async ({ page }) => {
+  const out = await prepare(page, cutout, [[5, 5]]);
+  test.skip(!out.webp, "this browser can't encode WebP");
+
+  expect(out.pixels["5,5"][3]).toBe(0);
 });
 
 test("applies the phone's rotation (EXIF orientation)", async ({ page }) => {
