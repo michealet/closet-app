@@ -46,6 +46,19 @@ describe("LoginForm", () => {
     expect(intent()).toBe("signin");
   });
 
+  it("sets up the email field for iPhone shortcuts and saved logins", () => {
+    render(<LoginForm next="/" />);
+    const email = screen.getByLabelText("Email");
+
+    // type="email" disables iOS autocorrect and Text Replacement (#14).
+    expect(email).toHaveAttribute("type", "text");
+    expect(email).toHaveAttribute("inputmode", "email");
+    expect(email).toHaveAttribute("autocorrect", "on");
+    expect(email).toHaveAttribute("autocapitalize", "none");
+    expect(email).toHaveAttribute("spellcheck", "false");
+    expect(email).toHaveAttribute("autocomplete", "username");
+  });
+
   it("carries the return path", () => {
     const { container } = render(<LoginForm next="/closet" />);
     expect(container.querySelector('input[name="next"]')).toHaveValue(

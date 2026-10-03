@@ -38,9 +38,17 @@ export function LoginForm({ next }: { next: string }) {
         <Input
           id="email"
           name="email"
-          type="email"
-          autoComplete="email"
+          // Not type="email": iOS Safari turns autocorrect off for email
+          // inputs, which also disables Text Replacement shortcuts (#14).
+          // inputMode keeps the email keyboard; the server validates it.
+          type="text"
           inputMode="email"
+          autoCorrect="on"
+          autoCapitalize="none"
+          spellCheck={false}
+          // "username" lets iOS Passwords / password managers pair this
+          // field with the password and offer saved logins.
+          autoComplete="username"
           required
           aria-invalid={state.status === "error" || undefined}
         />
