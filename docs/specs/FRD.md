@@ -252,7 +252,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 
 ### Storage
 
-- A private bucket `closet` with paths `{user_id}/items/{item_id}.webp`, `{user_id}/items/{item_id}_thumb.webp` and `{user_id}/outfits/{outfit_id}.webp`. Supabase's on-the-fly image resizing needs a paid plan, so thumbnails are made on the device at upload time.
+- A private bucket `closet` with paths `{user_id}/items/{item_id}.{webp|jpg}`, `{user_id}/items/{item_id}_thumb.{webp|jpg}` and `{user_id}/outfits/{outfit_id}.{webp|jpg}` (JPEG where the browser can't encode WebP; see ADR 0002). Supabase's on-the-fly image resizing needs a paid plan, so thumbnails are made on the device at upload time.
 - Storage policies: users can read and write only under their own `{user_id}/` prefix. Images are shown through short-lived signed URLs.
 
 ---
