@@ -29,3 +29,4 @@ What gets easier, what gets harder, and what we'll revisit.
 ## Index
 
 - [0001. Email + password sign-in instead of magic links](0001-email-password-auth.md)
+- [0002. Process photos in the browser and upload them straight to Storage](0002-client-side-image-pipeline.md)
