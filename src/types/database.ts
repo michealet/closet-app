@@ -23,7 +23,77 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "clothing_items": {
+                  Row: {
+                    "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "brand"?: string | null,"category"?: Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"created_at"?: string,"id"?: string,"image_path"?: string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"outfit_items": {
+                  Row: {
+                    "clothing_item_id": string,"outfit_id": string,"width": number,"x": number,"y": number,"z_index": number
+                  }
+                  Insert: {
+                    "clothing_item_id": string,"outfit_id": string,"width": number,"x": number,"y": number,"z_index"?: number
+                  }
+                  Update: {
+                    "clothing_item_id"?: string,"outfit_id"?: string,"width"?: number,"x"?: number,"y"?: number,"z_index"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "outfit_items_clothing_item_id_fkey"
+      columns: ["clothing_item_id"]
+isOneToOne: false
+      referencedRelation: "clothing_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outfit_items_outfit_id_fkey"
+      columns: ["outfit_id"]
+isOneToOne: false
+      referencedRelation: "outfits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"outfits": {
+                  Row: {
+                    "created_at": string,"id": string,"is_favorite": boolean,"name": string,"notes": string | null,"occasion": Database["public"]['Enums']["occasion"] | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"occasion"?: Database["public"]['Enums']["occasion"] | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"occasion"?: Database["public"]['Enums']["occasion"] | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"planned_outfits": {
+                  Row: {
+                    "created_at": string,"date": string,"event_name": string | null,"id": string,"outfit_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"date": string,"event_name"?: string | null,"id"?: string,"outfit_id": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"date"?: string,"event_name"?: string | null,"id"?: string,"outfit_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "planned_outfits_outfit_id_fkey"
+      columns: ["outfit_id"]
+isOneToOne: false
+      referencedRelation: "outfits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "created_at": string,"display_name": string | null,"id": string
                   }
@@ -45,7 +115,7 @@ export type Database = {
             [_ in never]: never
           }
           Enums: {
-            [_ in never]: never
+            "clothing_category": "tops"|"bottoms"|"dresses"|"sets"|"jackets_outerwear"|"shoes"|"bags"|"accessories"|"jewelry","clothing_color": "black"|"white"|"cream"|"beige"|"brown"|"gray"|"navy"|"blue"|"green"|"olive"|"yellow"|"orange"|"red"|"pink"|"purple"|"gold"|"silver"|"multi_pattern","occasion": "casual"|"class"|"going_out"|"dinner"|"formal"|"work"|"vacation"|"date_night"|"party"|"workout"|"other","season": "spring"|"summer"|"fall"|"winter"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -165,7 +235,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "clothing_category": ["tops", "bottoms", "dresses", "sets", "jackets_outerwear", "shoes", "bags", "accessories", "jewelry"],"clothing_color": ["black", "white", "cream", "beige", "brown", "gray", "navy", "blue", "green", "olive", "yellow", "orange", "red", "pink", "purple", "gold", "silver", "multi_pattern"],"occasion": ["casual", "class", "going_out", "dinner", "formal", "work", "vacation", "date_night", "party", "workout", "other"],"season": ["spring", "summer", "fall", "winter"]
           }
         }
 } as const
