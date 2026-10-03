@@ -7,7 +7,7 @@ A mobile-first digital closet for photographing the clothes you own, combining t
 - **Rules for AI agents (Codex and Claude):** [`AGENTS.md`](AGENTS.md)
 - **Technical decisions:** [`docs/decisions/`](docs/decisions/)
 
-> **Status:** The foundation is done: sign-in, an account page, CI, preview deploys and database migrations. The closet features in the FRD are next, starting with build step 0 (data model, storage, app shell and design tokens).
+> **Status:** The foundation and FRD build step 0 are in place: sign-in, the data model and image storage, the design theme and the app layout. Next up: the closet features, starting with **Add clothing** (FRD build step 1).
 
 ## Team
 
@@ -22,26 +22,99 @@ Every change lands through a pull request that passes CI. Both AIs follow the sa
 
 Next.js 16 (App Router, TypeScript strict) · pnpm 12 · Node 24 · Tailwind CSS + shadcn/ui · Supabase (Postgres, Auth, Storage) · Zod · Vitest + Testing Library · Playwright · Vercel · GitHub Actions
 
-## Maya's workflow
+## Maya's guide
 
-Maya needs no local setup.
+Everything you need happens in your browser (or the GitHub phone app). You never need to install anything.
 
-1. **Write an Issue** with the **Feature** template (or **Bug** for problems). Fill in the user story, acceptance criteria and FRD requirement IDs. Answer **"Does this need new data stored?"** honestly: if yes, Micheale adds the database change first (see [Database changes](#database-changes)).
-2. **Ask Codex to build it:** "Implement issue #N following AGENTS.md."
-3. **Open the PR** from Codex. Check that it says "Closes #N" and fill in the PR template.
-4. **Wait for the checks.** GitHub runs `quality`, `db` and `e2e`. If one fails, ask Codex to read the failure and fix it on the same branch.
-5. **Test on the preview.** Vercel comments on the PR with a preview URL. Try every acceptance criterion there, on your phone too.
-6. **Request review** from Micheale, who approves and merges. Merging deploys to production automatically.
+### The pieces, in plain words
 
-> Previews and production share **one database**, so anything you create while testing a preview is real data. Use a test account.
+| Word                  | What it means                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| **GitHub**            | Where the app's code lives, and where we talk about the work. Everything is written down there. |
+| **Issue**             | A note on GitHub describing one thing: a feature, a bug or a question.                          |
+| **Codex**             | The AI in ChatGPT that writes the code for an issue.                                            |
+| **Pull request (PR)** | Codex's proposed change, waiting to be checked and approved before it goes live.                |
+| **Checks**            | Automatic tests GitHub runs on every PR. Green ✓ = fine, red ✗ = something needs fixing.        |
+| **Preview**           | A private test copy of the app with that one change in it, made automatically for every PR.     |
+| **Merge**             | Accepting the PR. The change then goes live in the real app within about a minute.              |
+| **Production**        | The real app: https://closet-app-five-eosin.vercel.app                                          |
 
-### Questions and decisions
+### 1. Ask for a feature (or report a bug)
 
-Product questions go on GitHub, not chat. Use the **Question** issue template; it's assigned to Maya and labelled `question` (filter: `is:open label:question`). Answer in a comment; whoever asked records the answer (FRD, ADR or the linked issue) and closes it.
+1. Open https://github.com/michealet/closet-app/issues and click **New issue**.
+2. Choose **Feature** (something new) or **Bug** (something broken).
+3. Fill in the form. For features, the most important parts are:
+   - **User story**: "As a … I want … so that …"
+   - **Acceptance criteria**: a checklist of what "done" looks like, things you can tap and check yourself.
+   - **Does this need new data stored?** Answer honestly. If it's **Yes** or **Not sure**, Micheale sets up the storage first and tells you when you can start.
+4. Click **Create**. The issue gets a number, like **#14**. You'll use it in the next step.
 
-### One-time Codex setup
+### 2. Have Codex build it
 
-Codex works in its own cloud environment. In Codex's environment settings for this repo:
+1. Open Codex in ChatGPT and pick the **closet-app** repository.
+2. Type: **"Implement issue #14 following AGENTS.md."** (use your issue's number)
+3. When Codex has finished, use its button to **create a pull request**.
+
+### 3. Wait for the checks
+
+On the pull request page, scroll to the bottom. After a few minutes you'll see:
+
+- **All green ✓**: go to step 4.
+- **A red ✗**: go back to Codex and say **"The checks failed on the pull request, please fix them."** It updates the same pull request and the checks run again. If it still fails, add a comment on the PR mentioning **@michealet**.
+
+### 4. Try the preview
+
+1. On the pull request, find the comment from **Vercel** and click **Visit Preview**.
+2. Sign in and go through every item in the issue's acceptance criteria, **on your phone** as well as a computer.
+
+> ⚠️ Previews use the **real** database: anything you create there is real data. Use your normal account and delete test items afterwards, or use a separate test account.
+
+### 5. Approve it, or ask for changes
+
+1. On the pull request, click the **Files changed** tab. You don't need to read the code.
+2. Click **Review changes** (top right).
+3. Write a short note, then choose:
+   - **Approve**: "Tested on my phone, works as described."
+   - **Request changes**: say what's wrong, like a checklist. Then ask Codex to fix it ("Address the review comments on the pull request"), test the preview again and come back here.
+4. Click **Submit review**.
+
+In the GitHub phone app: open the pull request, then **Review** → **Approve**.
+
+Once you approve and the checks are green, the PR can be **merged**. Micheale merges unless you've agreed you'll do it. Then it's live.
+
+### Reviewing Micheale's changes
+
+Micheale's own pull requests (the app's look, layout and so on) need **your** approval too. You'll get an email asking for your review: follow steps 4 and 5. Pull requests that only touch the database, security or automation are Micheale's alone, so you won't be asked for those.
+
+### Answering questions
+
+When Micheale needs a product decision, she opens a **Question** issue assigned to you. You'll get an email.
+
+- **Easiest:** reply to the email. Your reply is posted on GitHub automatically.
+- Or open the issue and write a comment at the bottom.
+
+You don't need to close it. Micheale closes it once your answer is built in. To see everything waiting on you: https://github.com/michealet/closet-app/issues?q=is%3Aopen+label%3Aquestion
+
+### Emails you'll get from GitHub
+
+| Email about…                                 | What to do                                                |
+| -------------------------------------------- | --------------------------------------------------------- |
+| A **Question** assigned to you               | Reply with your answer.                                   |
+| A **review requested** on a pull request     | Try the preview, then approve or request changes.         |
+| **Comments** on your issues or pull requests | Read; reply if a question is asked.                       |
+| A **pull request merged**                    | Nothing. It's live. Check it in the real app if you like. |
+
+### Please don't
+
+- Change repository **Settings**, or edit files directly on the GitHub website. Let Codex make changes through pull requests.
+- Merge a pull request with a red ✗, or one you haven't tried on the preview.
+- Paste passwords, keys or other secrets into issues, comments or Codex.
+
+**Stuck?** Write a comment mentioning **@michealet** on the issue or pull request.
+
+### One-time Codex setup (do this together with Micheale)
+
+Codex works in its own cloud environment. In Codex's environment settings for this repository:
 
 - **Setup script:** `npm i -g pnpm@12 && pnpm install --frozen-lockfile` (Node 24). Don't rely on corepack; it can't install pnpm 12.
 - **Environment variables** (dummy values are fine; Codex never talks to the real database):
@@ -122,5 +195,7 @@ Only add tables and columns. Don't rename or drop anything the deployed app stil
   - `quality`: format check, lint, typecheck, unit tests, build
   - `db`: applies all migrations to a fresh database, runs the RLS tests, and checks `database.ts` is up to date
   - `e2e`: Playwright smoke tests against a production build
-- **Branch protection on `main`:** all three checks must pass, plus one approval from a code owner (Micheale). Micheale merges her own PRs with the admin bypass, since GitHub doesn't let authors approve their own PRs.
+- **Branch protection on `main`:** all three checks must pass, plus one approval from a code owner (`.github/CODEOWNERS`):
+  - **App code** (pages, components, features, docs): Micheale **or** Maya. Maya approves Micheale's PRs and Micheale approves Maya's, so neither needs a bypass.
+  - **DevOps paths** (`supabase/`, `.github/`, `src/lib/supabase/`, `src/proxy.ts`, `AGENTS.md`, `CLAUDE.md`): Micheale only. Since GitHub doesn't let authors approve their own PRs, Micheale merges these with the admin bypass.
 - **Dependabot** opens weekly PRs for npm packages and GitHub Actions.
