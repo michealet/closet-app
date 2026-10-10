@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "clothing_items": {
                   Row: {
-                    "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
+                    "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"colors": (Database["public"]['Enums']["clothing_color"])[],"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "brand"?: string | null,"category"?: Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"created_at"?: string,"id"?: string,"image_path"?: string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "brand"?: string | null,"category"?: Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path"?: string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(29);
 
 -- Users A and B; B owns an item, an outfit and a file, created as the table owner.
 insert into auth.users (id, email) values
@@ -48,6 +48,24 @@ select results_eq(
   'select id from public.clothing_items',
   $$ values ('11111111-0000-0000-0000-00000000000a'::uuid) $$,
   'A sees only her own items'
+);
+
+select is(
+  (select colors from public.clothing_items where id = '11111111-0000-0000-0000-00000000000a'),
+  '{}'::public.clothing_color[],
+  'An item has no colors by default'
+);
+
+select lives_ok(
+  $$ update public.clothing_items set colors = '{black,white}'
+     where id = '11111111-0000-0000-0000-00000000000a' $$,
+  'A can give her item several colors (#12)'
+);
+
+select is(
+  (select colors from public.clothing_items where id = '11111111-0000-0000-0000-00000000000a'),
+  '{black,white}'::public.clothing_color[],
+  '…and they are saved'
 );
 
 select throws_ok(
