@@ -25,7 +25,7 @@ export default async function HomePage() {
     <>
       <PageHeader
         title={name ? `Hi, ${name}` : "Welcome"}
-        description="What are we wearing today?"
+        description="What should I wear today?"
       />
 
       <div className="mb-10 grid grid-cols-2 gap-3 sm:max-w-md">
