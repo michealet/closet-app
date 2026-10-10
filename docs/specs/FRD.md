@@ -1,4 +1,4 @@
-# Functional Requirements — Digital Closet & Outfit Planner (MVP)
+# Functional Requirements — ReWear, Digital Closet & Outfit Planner (MVP)
 
 |                       |                                                                    |
 | --------------------- | ------------------------------------------------------------------ |
@@ -85,7 +85,7 @@ Spring · Summer · Fall · Winter · All Season (multi-select; choosing "All Se
 
 ### Colors
 
-A preset palette shown as swatches: Black, White, Cream, Beige, Brown, Gray, Navy, Blue, Green, Olive, Yellow, Orange, Red, Pink, Purple, Gold, Silver, Multi/Pattern.
+A preset palette shown as swatches (multi-select: an item can have several colors): Black, White, Cream, Beige, Brown, Gray, Navy, Blue, Green, Olive, Yellow, Orange, Red, Pink, Purple, Gold, Silver, Multi/Pattern.
 
 ---
 
@@ -98,7 +98,7 @@ A preset palette shown as swatches: Black, White, Cream, Beige, Brown, Gray, Nav
 | AC-3  | Before upload, the image is resized and compressed on the device (longest edge ≤ 1600px, WebP/JPEG) and phone-rotation (EXIF orientation) is corrected.         |
 | AC-4  | **Name** (required) and **Category** (required, from the fixed list).                                                                                           |
 | AC-5  | **Brand** (optional, free text, suggesting brands already used).                                                                                                |
-| AC-6  | **Color** (optional, swatch picker; one primary color for MVP).                                                                                                 |
+| AC-6  | **Colors** (optional, swatch picker, multi-select).                                                                                                             |
 | AC-7  | **Seasons** (optional, multi-select).                                                                                                                           |
 | AC-8  | **Notes** (optional, up to 500 characters).                                                                                                                     |
 | AC-9  | **Save** shows a success toast and returns to the Closet with the new item visible.                                                                             |
@@ -198,21 +198,22 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 
 ### `clothing_items`
 
-| Column                  | Type                        | Notes                                  |
-| ----------------------- | --------------------------- | -------------------------------------- |
-| id                      | uuid PK                     |                                        |
-| user_id                 | uuid FK → auth.users        | row-level security owner               |
-| name                    | text, required              |                                        |
-| category                | enum `clothing_category`    | fixed list, §5                         |
-| brand                   | text, null                  |                                        |
-| color                   | enum `clothing_color`, null | preset palette, §5                     |
-| seasons                 | `season[]`                  | Spring/Summer/Fall/Winter              |
-| notes                   | text, null                  | ≤ 500 chars                            |
-| image_path              | text, required              | Supabase Storage path (original)       |
-| thumbnail_path          | text, null                  | small version for grids (NF-2)         |
-| image_processed_path    | text, null                  | **future:** background-removed version |
-| is_favorite             | boolean, default false      |                                        |
-| created_at / updated_at | timestamptz                 |                                        |
+| Column                  | Type                        | Notes                                    |
+| ----------------------- | --------------------------- | ---------------------------------------- |
+| id                      | uuid PK                     |                                          |
+| user_id                 | uuid FK → auth.users        | row-level security owner                 |
+| name                    | text, required              |                                          |
+| category                | enum `clothing_category`    | fixed list, §5                           |
+| brand                   | text, null                  |                                          |
+| colors                  | `clothing_color[]`          | preset palette, §5; several allowed      |
+| color                   | enum `clothing_color`, null | deprecated (use `colors`); to be dropped |
+| seasons                 | `season[]`                  | Spring/Summer/Fall/Winter                |
+| notes                   | text, null                  | ≤ 500 chars                              |
+| image_path              | text, required              | Supabase Storage path (original)         |
+| thumbnail_path          | text, null                  | small version for grids (NF-2)           |
+| image_processed_path    | text, null                  | **future:** background-removed version   |
+| is_favorite             | boolean, default false      |                                          |
+| created_at / updated_at | timestamptz                 |                                          |
 
 ### `outfits`
 
@@ -259,16 +260,16 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 
 ## 14. Design Requirements
 
-| ID   | Requirement                                                                                                                                                                           |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DS-1 | Look and feel: **modern, feminine, minimal, clean, fashion-focused**, and not corporate.                                                                                              |
-| DS-2 | Palette: white and cream backgrounds, soft neutrals, one muted accent (e.g. dusty rose or blush). Colors are defined as theme variables in Tailwind/shadcn so they're easy to adjust. |
-| DS-3 | Rounded cards (≈ 16px radius), subtle shadows, generous whitespace.                                                                                                                   |
-| DS-4 | Simple typography: an elegant serif or display font for headings and a clean sans-serif for body text (via `next/font`).                                                              |
-| DS-5 | **Clothing images are the hero.** They sit on a consistent light background tile with minimal text overlay.                                                                           |
-| DS-6 | Mobile-first. Tap targets are at least 44px, and the layout is designed for one-handed use on a phone.                                                                                |
-| DS-7 | Smooth, subtle motion (card hover and press, bottom sheets). No heavy animations.                                                                                                     |
-| DS-8 | Accessibility basics: alt text from the item name, readable contrast, keyboard access on desktop.                                                                                     |
+| ID   | Requirement                                                                                                                                                             |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DS-1 | Look and feel: **modern, feminine, minimal, clean, fashion-focused**, and not corporate.                                                                                |
+| DS-2 | Palette: white and cream backgrounds, soft neutrals, one muted accent (sage green). Colors are defined as theme variables in Tailwind/shadcn so they're easy to adjust. |
+| DS-3 | Rounded cards (≈ 16px radius), subtle shadows, generous whitespace.                                                                                                     |
+| DS-4 | Simple typography: an elegant serif or display font for headings and a clean sans-serif for body text (via `next/font`).                                                |
+| DS-5 | **Clothing images are the hero.** They sit on a consistent light background tile with minimal text overlay.                                                             |
+| DS-6 | Mobile-first. Tap targets are at least 44px, and the layout is designed for one-handed use on a phone.                                                                  |
+| DS-7 | Smooth, subtle motion (card hover and press, bottom sheets). No heavy animations.                                                                                       |
+| DS-8 | Accessibility basics: alt text from the item name, readable contrast, keyboard access on desktop.                                                                       |
 
 ---
 
@@ -339,14 +340,14 @@ src/
 
 ---
 
-## 19. Open Questions (Maya to confirm)
+## 19. Open Questions (answered by Maya, #11 and #12)
 
-1. **Colors:** one primary color per item, or several? (The MVP assumes one, plus "Multi/Pattern".)
-2. **Outfit seasons:** one season or several? (The MVP assumes several, to match items.)
-3. **Calendar:** more than one outfit per day allowed? (The MVP assumes yes.)
-4. **Custom categories or occasions** defined by the user: needed for MVP, or later?
-5. **App name** and accent color preference?
-6. **Sharing:** strictly private, or will outfits ever be shared? (This affects future storage policies.)
+1. **Colors:** one primary color per item, or several? **Several** (plus "Multi/Pattern" for patterns).
+2. **Outfit seasons:** one season or several? **Several**, to match items.
+3. **Calendar:** more than one outfit per day allowed? **Yes.**
+4. **Custom categories or occasions** defined by the user: needed for MVP, or later? **Later**; fixed lists for the MVP.
+5. **App name** and accent color preference? **ReWear** (exactly this spelling) and **sage green**.
+6. **Sharing:** strictly private, or will outfits ever be shared? **Private** for now.
 
 ---
 

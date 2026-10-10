@@ -55,7 +55,7 @@
 
 /*
  * Theme (FRD DS-1–DS-3): white and cream, soft warm neutrals, one muted
- * accent (dusty rose — placeholder until Maya picks one), ~16px cards.
+ * accent (sage green, issue #11), ~16px cards.
  * Light only (no dark mode for the MVP). Use these through Tailwind tokens
  * (bg-background, text-muted-foreground, bg-brand, bg-tile …), never hex.
  */
@@ -74,20 +74,20 @@
   --secondary-foreground: var(--foreground);
   --muted: oklch(0.96 0.01 75);
   --muted-foreground: oklch(0.5 0.015 55);
-  --accent: oklch(0.955 0.018 15); /* blush: hovers and selected states */
-  --accent-foreground: oklch(0.36 0.05 15);
+  --accent: oklch(0.955 0.02 130); /* pale sage: hovers and selected states */
+  --accent-foreground: oklch(0.36 0.04 135);
   --destructive: oklch(0.577 0.2 27);
   --border: oklch(0.91 0.012 70);
   --input: oklch(0.88 0.014 70);
-  --ring: oklch(0.7 0.06 12);
+  --ring: oklch(0.7 0.05 135);
 
   /* The accent: hearts, active tab, highlights. Text on it uses brand-foreground. */
-  --brand: oklch(0.72 0.065 12); /* dusty rose */
-  --brand-foreground: oklch(0.24 0.03 15);
+  --brand: oklch(0.72 0.06 135); /* sage green */
+  --brand-foreground: oklch(0.24 0.03 140);
   /* Light tile behind clothing photos (DS-5). */
   --tile: oklch(0.965 0.01 75);
 
-  --chart-1: oklch(0.72 0.065 12);
+  --chart-1: oklch(0.72 0.06 135);
   --chart-2: oklch(0.6 0.04 60);
   --chart-3: oklch(0.45 0.02 50);
   --chart-4: oklch(0.82 0.03 75);
