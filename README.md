@@ -28,7 +28,7 @@ Next.js 16 (App Router, TypeScript strict) · pnpm 12 · Node 24 · Tailwind CSS
 
 Everything you need happens in your browser or on your phone: **ChatGPT** (website or app) for Codex, and **GitHub** (website or app) for everything else. You never need the command line or to install anything.
 
-**Get the GitHub app on your phone** (App Store or Google Play) and sign in as `mayatp2331` once; it stays signed in. It notifies you when a preview is ready, and you can do steps 3–5 below in it: open the preview, test it, and comment. Codex can't comment on pull requests for you, so this part happens in GitHub.
+**Get the GitHub app on your phone** (App Store or Google Play) and sign in as `mayatp2331` once; it stays signed in. It notifies you when a preview is ready, and you can open and test the preview there (steps 3–4 below).
 
 **New to Codex?** Start with the step-by-step [ChatGPT & Codex tutorial](docs/guides/chatgpt-codex.md): setup, a practice task, and messages you can copy.
 
@@ -81,12 +81,9 @@ On the pull request page, scroll to the bottom. After a few minutes you'll see:
 
 ### 5. Say it's ready, or ask for changes
 
-GitHub doesn't let anyone approve their own pull request, so for yours you **comment** instead:
-
-1. At the bottom of the pull request (in the GitHub app or website), write a comment. Start it with **@michealet** so Micheale gets notified:
-   - **Ready**: "@michealet tested the preview on my phone, looks good."
-   - **Not yet**: say what's wrong, like a checklist. Then ask Codex to fix it in the same task ("Address the comments on the pull request"). The preview updates by itself; test it again and comment here.
-2. **Micheale** then reviews the code, **approves** and **merges**. The change is live in the real app about a minute later.
+1. **Ready**: tell Micheale it looks good, whichever way is easiest: a text is fine. (Optional: also comment "@michealet looks good" on the pull request, so it's written down on GitHub.)
+2. **Not yet**: go back to the same Codex task and say what's wrong, like a checklist: `On the pull request, the Save button is hidden behind the keyboard on my phone. Fix it and update the same pull request.` The preview updates by itself; test it again.
+3. **Micheale** then reviews the code, **approves** and **merges**. The change is live in the real app about a minute later. (GitHub doesn't let anyone approve their own pull request, which is why Micheale does this part.)
 
 ### Reviewing Micheale's changes
 
