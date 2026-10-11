@@ -286,21 +286,23 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 
 ---
 
-## 16. MVP Build Order (one Issue/PR per step, or smaller)
+## 16. MVP Build Order (one PR per step, or smaller)
 
-| #   | Feature                                                                   | Requirement IDs  |
-| --- | ------------------------------------------------------------------------- | ---------------- |
-| 0   | Schema, storage bucket, app shell, navigation, design tokens _(Micheale)_ | §13, NV-_, DS-_  |
-| 1   | Add clothing (upload, form, save)                                         | AC-*             |
-| 2   | Digital closet grid + Item Detail                                         | CL-1, CL-5, ID-* |
-| 3   | Categories, filters, search                                               | CL-2–4, CL-6     |
-| 4   | Outfit creator (canvas, drag, resize)                                     | OC-1–8, OC-11–13 |
-| 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      |
-| 6   | Saved outfits page + actions                                              | OU-*             |
-| 7   | Favorites (items + outfits)                                               | FV-*             |
-| 8   | Outfit calendar                                                           | CA-*             |
-| 9   | Home screen (uses all of the above)                                       | HM-*             |
-| 10  | Profile / settings                                                        | PR-*             |
+"Build the next step of the FRD" means the first row below that isn't ✅ (see AGENTS.md). Each PR updates its row.
+
+| #   | Feature                                                                   | Requirement IDs  | Status  |
+| --- | ------------------------------------------------------------------------- | ---------------- | ------- |
+| 0   | Schema, storage bucket, app shell, navigation, design tokens _(Micheale)_ | §13, NV-_, DS-_  | ✅ done |
+| 1   | Add clothing (upload, form, save)                                         | AC-*             | to do   |
+| 2   | Digital closet grid + Item Detail                                         | CL-1, CL-5, ID-* | to do   |
+| 3   | Categories, filters, search                                               | CL-2–4, CL-6     | to do   |
+| 4   | Outfit creator (canvas, drag, resize)                                     | OC-1–8, OC-11–13 | to do   |
+| 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      | to do   |
+| 6   | Saved outfits page + actions                                              | OU-*             | to do   |
+| 7   | Favorites (items + outfits)                                               | FV-*             | to do   |
+| 8   | Outfit calendar                                                           | CA-*             | to do   |
+| 9   | Home screen (uses all of the above)                                       | HM-*             | to do   |
+| 10  | Profile / settings                                                        | PR-*             | to do   |
 
 ---
 

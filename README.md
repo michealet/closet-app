@@ -55,6 +55,8 @@ Everything you need happens in your browser or on your phone: **ChatGPT** (websi
 
 ### 2. Have Codex build it
 
+To build the app in the FRD's order, you don't need an issue. In Codex, just type **"Build the next step of the FRD."** Codex finds the next unfinished step, builds it, and marks it done. Then continue with step 3 below. For anything else (a bug, or an idea not in the FRD), create an issue first and:
+
 1. Open Codex in ChatGPT (website or phone app) and pick the **closet-app** repository.
 2. Type: **"Implement issue #14 following AGENTS.md."** (use your issue's number)
 3. When Codex has finished, use its button to **create a pull request**.

@@ -65,7 +65,17 @@ If the checks are green and the preview shows the new subtitle, you're set up. (
 
 ## Everyday use
 
+### Building the next step of the FRD
+
+1. In Codex, start a new task in **Cloud** (not "This computer"), pick **closet-app** and type:
+   > Build the next step of the FRD.
+2. Codex finds the first step in the FRD's build order (§16) that isn't done yet and builds it. If the step is big, it builds the first part and says what's left; the next "Build the next step" continues it.
+3. If Codex says it **stopped because it needs a database change or a new library**, don't create a pull request. Send Micheale what it said. Once Micheale says it's ready, start a new task with the same sentence.
+4. Otherwise, **create the pull request** and continue on GitHub. Wait until it's merged before asking for the next step.
+
 ### Building a feature from an issue
+
+For bugs or ideas that aren't in the FRD.
 
 1. Make sure the issue exists on GitHub (with the **Feature** template) and note its number, for example **#20**.
 2. If you answered **Yes** or **Not sure** to "Does this need new data stored?", wait until Micheale says the database part is ready.
@@ -80,7 +90,8 @@ Use **one Codex task per issue**. Start a new task for the next feature instead 
 
 | Situation                                | What to type in Codex                                                                                                        |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Build a feature                          | `Implement issue #20 following AGENTS.md.`                                                                                   |
+| Build the next FRD step                  | `Build the next step of the FRD.`                                                                                            |
+| Build a feature from an issue            | `Implement issue #20 following AGENTS.md.`                                                                                   |
 | Checks failed (red ✗) on the PR          | `The checks failed on the pull request. Read the failures, fix them and update the same pull request.`                       |
 | You asked for changes in your review     | `Address the review comments on the pull request for issue #20 and update the same pull request.`                            |
 | Small tweak after testing the preview    | `On the pull request for issue #20, make the "Save" button full width on phones. Update the same pull request.`              |
