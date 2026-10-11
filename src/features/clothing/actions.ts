@@ -17,7 +17,7 @@ export async function addClothing(input: unknown): Promise<ActionState> {
   if (authError || !userId)
     return { status: "error", message: "Sign in again to save your clothing." };
 
-  const { itemId, imagePath, thumbnailPath, name, category } = parsed.data;
+  const { itemId, imagePath, thumbnailPath, ...details } = parsed.data;
   if (
     !isItemImagePath(imagePath, { userId, itemId }) ||
     !isItemImagePath(thumbnailPath, { userId, itemId, thumb: true })
@@ -26,8 +26,7 @@ export async function addClothing(input: unknown): Promise<ActionState> {
 
   const { error } = await supabase.from("clothing_items").insert({
     id: itemId,
-    name,
-    category,
+    ...details,
     image_path: imagePath,
     thumbnail_path: thumbnailPath,
   });

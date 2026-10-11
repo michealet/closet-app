@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,19 +19,37 @@ import { uploadItemPhoto } from "@/lib/images/upload";
 import { createClient } from "@/lib/supabase/client";
 import { addClothing } from "./actions";
 import { clothingDetailsSchema } from "./schema";
+import { ClothingOptionalFields } from "./optional-fields";
 
-export function AddClothingForm() {
+export function AddClothingForm({ brands = [] }: { brands?: string[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [resetKey, setResetKey] = useState(0);
+  const [brandOptions, setBrandOptions] = useState(brands);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const focusedReset = useRef(0);
+  useEffect(() => {
+    if (resetKey > focusedReset.current && !pending) {
+      photoRef.current?.focus();
+      focusedReset.current = resetKey;
+    }
+  }, [resetKey, pending]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
     const form = new FormData(event.currentTarget);
+    const another =
+      (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
+      "another";
     const details = clothingDetailsSchema.safeParse({
       name: form.get("name"),
       category: form.get("category"),
+      brand: form.get("brand"),
+      notes: form.get("notes"),
+      colors: form.getAll("colors"),
+      seasons: form.getAll("seasons"),
     });
     const photo = form.get("photo");
     const fail = (message: string) => {
@@ -54,6 +78,15 @@ export function AddClothingForm() {
         }
         if (result.status === "success") {
           toast.success(result.message);
+          if (another) {
+            if (details.data.brand)
+              setBrandOptions((values) =>
+                [...new Set([...values, details.data.brand!])].sort(),
+              );
+            setResetKey((key) => key + 1);
+            router.refresh();
+            return;
+          }
           router.push("/closet");
           router.refresh();
         }
@@ -69,12 +102,13 @@ export function AddClothingForm() {
   }
 
   return (
-    <form onSubmit={submit} className="max-w-lg space-y-6">
+    <form key={resetKey} onSubmit={submit} className="max-w-lg space-y-6">
       <fieldset disabled={pending} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="photo">Photo</Label>
           <Input
             id="photo"
+            ref={photoRef}
             name="photo"
             type="file"
             accept="image/*,.heic,.heif"
@@ -110,8 +144,18 @@ export function AddClothingForm() {
             ))}
           </select>
         </div>
+        <ClothingOptionalFields brands={brandOptions} />
         <Button type="submit" size="lg" className="w-full">
           {pending ? "Uploading and saving…" : "Save clothing"}
+        </Button>
+        <Button
+          type="submit"
+          value="another"
+          size="lg"
+          variant="secondary"
+          className="w-full"
+        >
+          Save &amp; add another
         </Button>
       </fieldset>
       {error && (
