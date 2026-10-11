@@ -72,6 +72,10 @@ export default async function HomePage() {
           />
         </HomeSection>
       </div>
+
+      <p className="mt-10 text-center text-sm text-muted-foreground">
+        Created by Maya
+      </p>
     </>
   );
 }
