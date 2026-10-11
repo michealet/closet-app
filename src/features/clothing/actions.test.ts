@@ -1,22 +1,37 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { addClothing, updateClothing } from "./actions";
+import {
+  addClothing,
+  deleteClothing,
+  setItemFavorite,
+  updateClothing,
+} from "./actions";
 import { clothingDetailsSchema } from "./schema";
 
-const { insert, update, eq, select, getClaims, revalidatePath } = vi.hoisted(
-  () => ({
-    insert: vi.fn(),
-    update: vi.fn(),
-    eq: vi.fn(),
-    select: vi.fn(),
-    getClaims: vi.fn(),
-    revalidatePath: vi.fn(),
-  }),
-);
+const {
+  insert,
+  update,
+  del,
+  eq,
+  select,
+  removeFiles,
+  getClaims,
+  revalidatePath,
+} = vi.hoisted(() => ({
+  insert: vi.fn(),
+  update: vi.fn(),
+  del: vi.fn(),
+  removeFiles: vi.fn(),
+  eq: vi.fn(),
+  select: vi.fn(),
+  getClaims: vi.fn(),
+  revalidatePath: vi.fn(),
+}));
 vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("@/lib/images/storage", () => ({ removeClosetFiles: removeFiles }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getClaims },
-    from: () => ({ insert, update }),
+    from: () => ({ insert, update, delete: del }),
   }),
 }));
 const userId = "11111111-1111-4111-8111-111111111111";
@@ -33,6 +48,8 @@ beforeEach(() => {
   getClaims.mockResolvedValue({ data: { claims: { sub: userId } } });
   insert.mockResolvedValue({ error: null });
   update.mockReturnValue({ eq });
+  del.mockReturnValue({ eq });
+  removeFiles.mockResolvedValue(true);
   eq.mockReturnValue({ select });
   select.mockResolvedValue({ data: [{ id: itemId }], error: null });
 });
@@ -157,4 +174,68 @@ it("reports an item that isn't in the user's closet", async () => {
     message: "This item is no longer in your closet.",
   });
   expect(revalidatePath).not.toHaveBeenCalled();
+});
+
+it("saves a favorite and reports items it can't change", async () => {
+  expect(await setItemFavorite({ id: itemId, isFavorite: true })).toMatchObject(
+    { status: "success" },
+  );
+  expect(update).toHaveBeenCalledWith({ is_favorite: true });
+  expect(eq).toHaveBeenCalledWith("id", itemId);
+
+  select.mockResolvedValue({ data: [], error: null });
+  expect(
+    await setItemFavorite({ id: itemId, isFavorite: false }),
+  ).toMatchObject({ status: "error" });
+  expect(await setItemFavorite({ id: "x", isFavorite: true })).toMatchObject({
+    status: "error",
+  });
+});
+it("deletes an item and its photos", async () => {
+  select.mockResolvedValue({
+    data: [
+      {
+        image_path: input.imagePath,
+        thumbnail_path: input.thumbnailPath,
+        image_processed_path: null,
+      },
+    ],
+    error: null,
+  });
+  expect(await deleteClothing(itemId)).toMatchObject({
+    status: "success",
+    message: "Item deleted.",
+  });
+  expect(eq).toHaveBeenCalledWith("id", itemId);
+  expect(removeFiles.mock.calls[0][1]).toEqual([
+    input.imagePath,
+    input.thumbnailPath,
+    null,
+  ]);
+  expect(revalidatePath).toHaveBeenCalledWith("/closet");
+});
+it("says so when a deleted item's photo couldn't be removed", async () => {
+  select.mockResolvedValue({
+    data: [
+      {
+        image_path: input.imagePath,
+        thumbnail_path: null,
+        image_processed_path: null,
+      },
+    ],
+    error: null,
+  });
+  removeFiles.mockResolvedValue(false);
+  expect(await deleteClothing(itemId)).toMatchObject({
+    status: "success",
+    message: "Item deleted, but its photo couldn't be removed.",
+  });
+});
+it("doesn't touch storage when nothing was deleted", async () => {
+  select.mockResolvedValue({ data: [], error: null });
+  expect(await deleteClothing(itemId)).toMatchObject({ status: "error" });
+  select.mockResolvedValue({ data: null, error: { message: "boom" } });
+  expect(await deleteClothing(itemId)).toMatchObject({ status: "error" });
+  expect(await deleteClothing("not-a-uuid")).toMatchObject({ status: "error" });
+  expect(removeFiles).not.toHaveBeenCalled();
 });

@@ -1,14 +1,21 @@
 import Link from "next/link";
+import { HeartButton } from "@/components/shared/heart-button";
 import { ImageTile } from "@/components/shared/image-tile";
+import { setItemFavorite } from "./actions";
 
-export type GridItem = { id: string; name: string; photoUrl: string | null };
+export type GridItem = {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  isFavorite: boolean;
+};
 
-/** CL-1: image grid, 2 columns on phones up to 6 on wide screens. */
+/** CL-1: image grid, 2 columns on phones up to 6 on wide screens, with hearts. */
 export function ClosetGrid({ items }: { items: GridItem[] }) {
   return (
     <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {items.map((item) => (
-        <li key={item.id}>
+        <li key={item.id} className="relative">
           <Link
             href={`/closet/${item.id}`}
             className="group block rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -20,6 +27,14 @@ export function ClosetGrid({ items }: { items: GridItem[] }) {
             />
             <p className="mt-2 truncate text-sm">{item.name}</p>
           </Link>
+          {/* Outside the link: a button can't sit inside an <a>. */}
+          <HeartButton
+            id={item.id}
+            name={item.name}
+            isFavorite={item.isFavorite}
+            action={setItemFavorite}
+            className="absolute top-1.5 right-1.5"
+          />
         </li>
       ))}
     </ul>

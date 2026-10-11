@@ -23,7 +23,9 @@ export default async function ClosetPage(props: PageProps<"/closet">) {
   const supabase = await createClient();
   const { data, count, error } = await supabase
     .from("clothing_items")
-    .select("id, name, image_path, thumbnail_path", { count: "exact" })
+    .select("id, name, image_path, thumbnail_path, is_favorite", {
+      count: "exact",
+    })
     .order("created_at", { ascending: false })
     .range(0, limit - 1);
   const items = data ?? [];
@@ -52,6 +54,7 @@ export default async function ClosetPage(props: PageProps<"/closet">) {
             items={items.map((item) => ({
               id: item.id,
               name: item.name,
+              isFavorite: item.is_favorite,
               photoUrl:
                 urls.get(item.thumbnail_path ?? item.image_path) ?? null,
             }))}
