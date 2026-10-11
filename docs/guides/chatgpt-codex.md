@@ -105,7 +105,7 @@ Go back to **the same Codex task** that created the pull request and ask for the
 
 ### On your phone
 
-The ChatGPT phone app includes Codex. It's handy for starting a task or checking progress. Reviewing and approving is easiest in the **GitHub** app or website.
+The ChatGPT phone app includes Codex. It's handy for starting a task or checking progress. For everything after the pull request is created, use the **GitHub** app (signed in as `mayatp2331`): it notifies you when the preview is ready, opens the preview link, and is where you comment "@michealet looks good". Codex can't post that comment for you.
 
 ---
 
