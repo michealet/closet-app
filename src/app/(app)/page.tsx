@@ -74,7 +74,7 @@ export default async function HomePage() {
       </div>
 
       <p className="mt-10 text-center text-sm text-muted-foreground">
-        Created by Maya
+        Created by Maya Taylor-Prince
       </p>
     </>
   );
