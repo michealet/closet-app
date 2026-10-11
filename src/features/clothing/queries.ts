@@ -1,20 +1,22 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
-/** Brands already used in the user's closet, for suggestions (AC-5). */
-export async function brandSuggestions(
+/** Brands (AC-5) and tags (#36) already used in the closet, for suggestions. */
+export async function closetSuggestions(
   supabase: SupabaseClient<Database>,
-): Promise<{ brands: string[]; failed: boolean }> {
+): Promise<{ brands: string[]; tags: string[]; failed: boolean }> {
   const { data, error } = await supabase
     .from("clothing_items")
-    .select("brand")
-    .not("brand", "is", null);
-  const brands = [
-    ...new Set(
+    .select("brand, tags");
+  const sorted = (values: string[]) =>
+    [...new Set(values)].sort((a, b) => a.localeCompare(b));
+  return {
+    brands: sorted(
       (data ?? []).flatMap(({ brand }) =>
         brand?.trim() ? [brand.trim()] : [],
       ),
     ),
-  ].sort((a, b) => a.localeCompare(b));
-  return { brands, failed: Boolean(error) };
+    tags: sorted((data ?? []).flatMap(({ tags }) => tags)),
+    failed: Boolean(error),
+  };
 }

@@ -12,19 +12,23 @@ import {
   type ClothingColor,
   type Season,
 } from "@/lib/constants";
+import { TagInput } from "./tag-input";
 
 export type OptionalDefaults = {
   brand: string | null;
   notes: string | null;
   colors: ClothingColor[];
   seasons: Season[];
+  tags: string[];
 };
 
 export function ClothingOptionalFields({
   brands,
+  tags = [],
   defaults,
 }: {
   brands: string[];
+  tags?: string[];
   defaults?: OptionalDefaults;
 }) {
   const [seasons, setSeasons] = useState<Season[]>(defaults?.seasons ?? []);
@@ -112,6 +116,7 @@ export function ClothingOptionalFields({
           ))}
         </div>
       </fieldset>
+      <TagInput defaultTags={defaults?.tags} suggestions={tags} />
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (optional)</Label>
         <textarea

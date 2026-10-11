@@ -27,7 +27,7 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
   const { data: item } = await supabase
     .from("clothing_items")
     .select(
-      "id, name, category, brand, colors, seasons, notes, image_path, is_favorite, outfit_items(outfit:outfits(id, name, thumbnail_path))",
+      "id, name, category, brand, colors, seasons, tags, notes, image_path, is_favorite, outfit_items(outfit:outfits(id, name, thumbnail_path))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -64,6 +64,21 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
       ) : null,
     ],
     ["Seasons", seasons || null],
+    [
+      "Tags",
+      item.tags.length ? (
+        <ul className="flex flex-wrap gap-2">
+          {item.tags.map((tag) => (
+            <li
+              key={tag}
+              className="rounded-full bg-accent px-3 py-1 text-sm text-accent-foreground"
+            >
+              {tag}
+            </li>
+          ))}
+        </ul>
+      ) : null,
+    ],
     ["Notes", item.notes],
   ];
 

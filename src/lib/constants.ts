@@ -105,3 +105,5 @@ export const NAME_MAX = 100;
 export const BRAND_MAX = 80;
 export const NOTES_MAX = 500;
 export const EVENT_NAME_MAX = 100;
+export const TAG_MAX = 30;
+export const TAGS_MAX = 20;

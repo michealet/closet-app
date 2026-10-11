@@ -65,13 +65,13 @@ it("saves trimmed details and paths without accepting a user_id", async () => {
     notes: null,
     colors: [],
     seasons: [],
+    tags: [],
     image_path: input.imagePath,
     thumbnail_path: input.thumbnailPath,
   });
   expect(revalidatePath).toHaveBeenCalledWith("/closet");
 });
 it.each([
-  { name: " " },
   { name: "x".repeat(101) },
   { category: "invalid" },
   { itemId: "invalid" },
@@ -139,6 +139,7 @@ it("updates details only when no new photo was uploaded", async () => {
     notes: null,
     colors: ["blue"],
     seasons: [],
+    tags: [],
   });
   expect(eq).toHaveBeenCalledWith("id", itemId);
   expect(revalidatePath).toHaveBeenCalledWith("/closet");
@@ -238,4 +239,24 @@ it("doesn't touch storage when nothing was deleted", async () => {
   expect(await deleteClothing(itemId)).toMatchObject({ status: "error" });
   expect(await deleteClothing("not-a-uuid")).toMatchObject({ status: "error" });
   expect(removeFiles).not.toHaveBeenCalled();
+});
+
+it("names an item from its details when Name is empty (#36)", async () => {
+  await addClothing({ ...input, name: "", colors: ["navy"], brand: "Zara" });
+  expect(insert.mock.calls[0][0]).toMatchObject({ name: "Navy Zara top" });
+});
+it("saves tags lowercase, trimmed and once each", async () => {
+  await addClothing({ ...input, tags: [" Linen ", "linen", "Wedding  Guest"] });
+  expect(insert.mock.calls[0][0]).toMatchObject({
+    tags: ["linen", "wedding guest"],
+  });
+  expect(await addClothing({ ...input, tags: ["x".repeat(31)] })).toMatchObject(
+    { status: "error" },
+  );
+  expect(
+    await addClothing({
+      ...input,
+      tags: Array.from({ length: 21 }, (_, i) => `t${i}`),
+    }),
+  ).toMatchObject({ status: "error", message: "Use at most 20 tags." });
 });
