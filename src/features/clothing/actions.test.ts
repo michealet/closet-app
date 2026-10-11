@@ -1,17 +1,22 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { addClothing } from "./actions";
+import { addClothing, updateClothing } from "./actions";
 import { clothingDetailsSchema } from "./schema";
 
-const { insert, getClaims, revalidatePath } = vi.hoisted(() => ({
-  insert: vi.fn(),
-  getClaims: vi.fn(),
-  revalidatePath: vi.fn(),
-}));
+const { insert, update, eq, select, getClaims, revalidatePath } = vi.hoisted(
+  () => ({
+    insert: vi.fn(),
+    update: vi.fn(),
+    eq: vi.fn(),
+    select: vi.fn(),
+    getClaims: vi.fn(),
+    revalidatePath: vi.fn(),
+  }),
+);
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getClaims },
-    from: () => ({ insert }),
+    from: () => ({ insert, update }),
   }),
 }));
 const userId = "11111111-1111-4111-8111-111111111111";
@@ -27,6 +32,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   getClaims.mockResolvedValue({ data: { claims: { sub: userId } } });
   insert.mockResolvedValue({ error: null });
+  update.mockReturnValue({ eq });
+  eq.mockReturnValue({ select });
+  select.mockResolvedValue({ data: [{ id: itemId }], error: null });
 });
 it("saves trimmed details and paths without accepting a user_id", async () => {
   expect(
@@ -96,5 +104,57 @@ it("requires a valid session", async () => {
 it("reports insert failure without invalidating the closet", async () => {
   insert.mockResolvedValue({ error: { message: "database failure" } });
   expect(await addClothing(input)).toMatchObject({ status: "error" });
+  expect(revalidatePath).not.toHaveBeenCalled();
+});
+
+const details = {
+  itemId,
+  name: " Linen shirt ",
+  category: "tops",
+  colors: ["blue"],
+};
+it("updates details only when no new photo was uploaded", async () => {
+  expect(await updateClothing(details)).toMatchObject({ status: "success" });
+  expect(update).toHaveBeenCalledWith({
+    name: "Linen shirt",
+    category: "tops",
+    brand: null,
+    notes: null,
+    colors: ["blue"],
+    seasons: [],
+  });
+  expect(eq).toHaveBeenCalledWith("id", itemId);
+  expect(revalidatePath).toHaveBeenCalledWith("/closet");
+});
+it("saves a replaced photo's paths", async () => {
+  await updateClothing({
+    ...details,
+    imagePath: input.imagePath,
+    thumbnailPath: input.thumbnailPath,
+  });
+  expect(update.mock.calls[0][0]).toMatchObject({
+    image_path: input.imagePath,
+    thumbnail_path: input.thumbnailPath,
+  });
+});
+it.each([
+  { imagePath: input.imagePath },
+  {
+    imagePath: input.imagePath.replace(userId, itemId),
+    thumbnailPath: input.thumbnailPath,
+  },
+  { imagePath: input.imagePath, thumbnailPath: input.imagePath },
+])("rejects partial or foreign photo paths on edit %j", async (paths) => {
+  expect(await updateClothing({ ...details, ...paths })).toMatchObject({
+    status: "error",
+  });
+  expect(update).not.toHaveBeenCalled();
+});
+it("reports an item that isn't in the user's closet", async () => {
+  select.mockResolvedValue({ data: [], error: null });
+  expect(await updateClothing(details)).toMatchObject({
+    status: "error",
+    message: "This item is no longer in your closet.",
+  });
   expect(revalidatePath).not.toHaveBeenCalled();
 });

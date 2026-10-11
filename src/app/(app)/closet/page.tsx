@@ -31,11 +31,14 @@ export default async function ClosetPage() {
       ) : items?.length ? (
         <ul className="space-y-4">
           {items.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-lg border border-border p-3 break-words"
-            >
-              {item.name}
+            <li key={item.id}>
+              {/* Until the Item Detail page (FRD step 2), tap to edit. */}
+              <Link
+                href={`/closet/${item.id}/edit`}
+                className="block min-h-11 rounded-lg border border-border p-3 break-words hover:bg-accent"
+              >
+                {item.name}
+              </Link>
             </li>
           ))}
         </ul>
