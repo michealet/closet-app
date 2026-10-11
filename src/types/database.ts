@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "clothing_items": {
                   Row: {
-                    "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"colors": (Database["public"]['Enums']["clothing_color"])[],"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
+                    "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"colors": (Database["public"]['Enums']["clothing_color"])[],"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"tags": (string)[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"tags"?: (string)[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "brand"?: string | null,"category"?: Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path"?: string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "brand"?: string | null,"category"?: Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path"?: string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name"?: string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"tags"?: (string)[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -112,7 +112,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "valid_item_tags":
+{ Args: { "tags": (string)[] }; Returns: boolean
+                           }
           }
           Enums: {
             "clothing_category": "tops"|"bottoms"|"dresses"|"sets"|"jackets_outerwear"|"shoes"|"bags"|"accessories"|"jewelry","clothing_color": "black"|"white"|"cream"|"beige"|"brown"|"gray"|"navy"|"blue"|"green"|"olive"|"yellow"|"orange"|"red"|"pink"|"purple"|"gold"|"silver"|"multi_pattern","occasion": "casual"|"class"|"going_out"|"dinner"|"formal"|"work"|"vacation"|"date_night"|"party"|"workout"|"other","season": "spring"|"summer"|"fall"|"winter"

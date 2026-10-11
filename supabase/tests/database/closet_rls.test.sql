@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(29);
+select plan(34);
 
 -- Users A and B; B owns an item, an outfit and a file, created as the table owner.
 insert into auth.users (id, email) values
@@ -54,6 +54,40 @@ select is(
   (select colors from public.clothing_items where id = '11111111-0000-0000-0000-00000000000a'),
   '{}'::public.clothing_color[],
   'An item has no colors by default'
+);
+
+select is(
+  (select tags from public.clothing_items where id = '11111111-0000-0000-0000-00000000000a'),
+  '{}'::text[],
+  'An item has no tags by default'
+);
+
+select lives_ok(
+  $$ update public.clothing_items set tags = '{linen,wedding guest}'
+     where id = '11111111-0000-0000-0000-00000000000a' $$,
+  'A can tag her item (#36)'
+);
+
+select throws_ok(
+  $$ update public.clothing_items set tags = '{Linen}'
+     where id = '11111111-0000-0000-0000-00000000000a' $$,
+  '23514', null,
+  'Tags must be lowercase'
+);
+
+select throws_ok(
+  $$ update public.clothing_items set tags = array[repeat('x', 31)]
+     where id = '11111111-0000-0000-0000-00000000000a' $$,
+  '23514', null,
+  'Tags are at most 30 characters'
+);
+
+select throws_ok(
+  $$ update public.clothing_items
+     set tags = (select array_agg('t' || g) from generate_series(1, 21) g)
+     where id = '11111111-0000-0000-0000-00000000000a' $$,
+  '23514', null,
+  'An item has at most 20 tags'
 );
 
 select lives_ok(
