@@ -36,3 +36,16 @@ export const clothingSchema = clothingDetailsSchema.extend({
   imagePath: z.string(),
   thumbnailPath: z.string(),
 });
+
+/** Edit (AC-10): a replaced photo sends both new paths, or neither. */
+export const clothingUpdateSchema = clothingDetailsSchema
+  .extend({
+    itemId: z.uuid(),
+    imagePath: z.string().optional(),
+    thumbnailPath: z.string().optional(),
+  })
+  .refine(
+    ({ imagePath, thumbnailPath }) =>
+      (imagePath === undefined) === (thumbnailPath === undefined),
+    "Upload a photo for this item again.",
+  );

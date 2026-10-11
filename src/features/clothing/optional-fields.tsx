@@ -9,16 +9,36 @@ import {
   COLOR_OPTIONS,
   NOTES_MAX,
   SEASON_OPTIONS,
+  type ClothingColor,
   type Season,
 } from "@/lib/constants";
 
-export function ClothingOptionalFields({ brands }: { brands: string[] }) {
-  const [seasons, setSeasons] = useState<Season[]>([]);
+export type OptionalDefaults = {
+  brand: string | null;
+  notes: string | null;
+  colors: ClothingColor[];
+  seasons: Season[];
+};
+
+export function ClothingOptionalFields({
+  brands,
+  defaults,
+}: {
+  brands: string[];
+  defaults?: OptionalDefaults;
+}) {
+  const [seasons, setSeasons] = useState<Season[]>(defaults?.seasons ?? []);
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor="brand">Brand (optional)</Label>
-        <Input id="brand" name="brand" list="brands" maxLength={BRAND_MAX} />
+        <Input
+          id="brand"
+          name="brand"
+          list="brands"
+          maxLength={BRAND_MAX}
+          defaultValue={defaults?.brand ?? ""}
+        />
         <datalist id="brands">
           {brands.map((brand) => (
             <option key={brand} value={brand}>
@@ -39,6 +59,7 @@ export function ClothingOptionalFields({ brands }: { brands: string[] }) {
                 type="checkbox"
                 name="colors"
                 value={value}
+                defaultChecked={defaults?.colors.includes(value)}
                 className="size-4"
               />
               <span
@@ -98,6 +119,7 @@ export function ClothingOptionalFields({ brands }: { brands: string[] }) {
           name="notes"
           maxLength={NOTES_MAX}
           rows={3}
+          defaultValue={defaults?.notes ?? ""}
           className="w-full rounded-lg border border-input bg-background p-3 text-base focus-visible:outline-ring"
         />
         <p className="text-sm text-muted-foreground">
