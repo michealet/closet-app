@@ -39,7 +39,7 @@ Everything you need happens in your browser or on your phone: **ChatGPT** (websi
 | **Codex**             | The AI in ChatGPT that writes the code for an issue.                                            |
 | **Pull request (PR)** | Codex's proposed change, waiting to be checked and approved before it goes live.                |
 | **Checks**            | Automatic tests GitHub runs on every PR. Green ✓ = fine, red ✗ = something needs fixing.        |
-| **Preview**           | A private test copy of the app with that one change in it, made automatically for every PR.     |
+| **Preview**           | A test copy of the app with that one change in it, made automatically for every PR.             |
 | **Merge**             | Accepting the PR. The change then goes live in the real app within about a minute.              |
 | **Production**        | The real app: https://closet-app-five-eosin.vercel.app                                          |
 
@@ -75,26 +75,22 @@ On the pull request page, scroll to the bottom. After a few minutes you'll see:
 
 > ⚠️ Previews use the **real** database: anything you create there is real data. Use your normal account and delete test items afterwards, or use a separate test account.
 
-### 5. Approve it, or ask for changes
+### 5. Say it's ready, or ask for changes
 
-1. On the pull request, click the **Files changed** tab. You don't need to read the code.
-2. Click **Review changes** (top right).
-3. Write a short note, then choose:
-   - **Approve**: "Tested on my phone, works as described."
-   - **Request changes**: say what's wrong, like a checklist. Then ask Codex to fix it ("Address the review comments on the pull request"), test the preview again and come back here.
-4. Click **Submit review**.
+GitHub doesn't let anyone approve their own pull request, so for yours you **comment** instead:
 
-In the GitHub phone app: open the pull request, then **Review** → **Approve**.
-
-Once you approve and the checks are green, the PR can be **merged**. Micheale merges unless you've agreed you'll do it. Then it's live.
+1. At the bottom of the pull request, write a comment:
+   - **Ready**: "Tested the preview on my phone, looks good."
+   - **Not yet**: say what's wrong, like a checklist. Then ask Codex to fix it in the same task ("Address the comments on the pull request"). The preview updates by itself; test it again and comment here.
+2. **Micheale** then reviews the code, **approves** and **merges**. The change is live in the real app about a minute later.
 
 ### Reviewing Micheale's changes
 
-Micheale's own pull requests (the app's look, layout and so on) need **your** approval too. You'll get an email asking for your review: follow steps 4 and 5. Pull requests that only touch the database, security or automation are Micheale's alone, so you won't be asked for those.
+Micheale's own pull requests (the app's look, layout and so on) need **your** approval too. You'll get an email asking for your review. Try the preview (step 4), then on the pull request click **Files changed** → **Review changes**, choose **Approve** (or **Request changes** and say what's wrong) and **Submit review**. In the GitHub phone app: **Review** → **Approve**. Pull requests that only touch the database, security or automation are Micheale's alone, so you won't be asked for those.
 
 ### Answering questions
 
-When Micheale needs a product decision, she opens a **Question** issue assigned to you. You'll get an email.
+When Micheale needs a product decision, Micheale opens a **Question** issue assigned to you. You'll get an email.
 
 - **Easiest:** reply to the email. Your reply is posted on GitHub automatically.
 - Or open the issue and write a comment at the bottom.
@@ -103,18 +99,20 @@ You don't need to close it. Micheale closes it once your answer is built in. To 
 
 ### Emails you'll get from GitHub
 
-| Email about…                                 | What to do                                                |
-| -------------------------------------------- | --------------------------------------------------------- |
-| A **Question** assigned to you               | Reply with your answer.                                   |
-| A **review requested** on a pull request     | Try the preview, then approve or request changes.         |
-| **Comments** on your issues or pull requests | Read; reply if a question is asked.                       |
-| A **pull request merged**                    | Nothing. It's live. Check it in the real app if you like. |
+| Email about…                                   | What to do                                                |
+| ---------------------------------------------- | --------------------------------------------------------- |
+| A **Question** assigned to you                 | Reply with your answer.                                   |
+| A **review requested** on a pull request       | Try the preview, then approve or request changes.         |
+| A **comment from Vercel** on your pull request | Your preview is ready: open it and test (step 4).         |
+| **Comments** on your issues or pull requests   | Read; reply if a question is asked.                       |
+| A **pull request merged**                      | Nothing. It's live. Check it in the real app if you like. |
 
 ### Please don't
 
 - Change repository **Settings**, or edit files directly on the GitHub website. Let Codex make changes through pull requests.
 - Merge a pull request with a red ✗, or one you haven't tried on the preview.
 - Paste passwords, keys or other secrets into issues, comments or Codex.
+- Write anything personal in issues, pull requests or comments. **The repository is public**: anyone can read the code and what's written on GitHub. (The app's data — your clothes, photos and outfits — stays private.)
 
 **Stuck?** Write a comment mentioning **@michealet** on the issue or pull request.
 
@@ -193,6 +191,7 @@ Only add tables and columns. Don't rename or drop anything the deployed app stil
 
 - **Secrets:** Vercel holds `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Production and Preview). The GitHub `production` environment holds `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` and `SUPABASE_PROJECT_REF`, and only `main` can use them. Never commit `.env*` files (except `.env.example`) or the service-role key.
 - **Supabase Auth:** email + password with "Confirm email" off ([ADR 0001](docs/decisions/0001-email-password-auth.md)). Redirect URLs allow `https://*-leopard10.vercel.app/**` and `http://localhost:3000/**`.
+- **Why the repo is public:** Vercel's free Hobby plan only builds commits by the account owner on **private** repos, so Maya's PRs and merges were blocked. On a public repo they deploy normally. Making the repo private again would need Vercel Pro ($20/month per member, Maya included) or deploys via GitHub Actions. Keep secrets out of the repo and its history.
 - **Free tiers:** a free Supabase project pauses after about a week without activity; unpause it from the Supabase dashboard. Supabase's built-in email sender allows about 2 auth emails per hour.
 
 ## CI and review
