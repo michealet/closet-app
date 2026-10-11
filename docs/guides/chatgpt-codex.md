@@ -19,9 +19,15 @@ For how the whole process fits together (issues, checks, previews, approving), s
 
 ### 1. Connect GitHub
 
+Codex needs two separate permissions on GitHub:
+
+- **The Codex app is installed on closet-app.** Only the repository's owner can do this, so Micheale has done it once for everyone. You can't, because the repository belongs to his account.
+- **You authorize Codex for your own account.** Codex then works as `mayatp2331`, with your access, and your pull requests show your name.
+
 1. In ChatGPT, open **Codex** (in the sidebar, or go to https://chatgpt.com/codex).
 2. When asked, **connect GitHub** and sign in as `mayatp2331`.
-3. When GitHub asks which repositories Codex may use, choose **Only select repositories** and pick **closet-app**. Don't give it access to everything.
+3. If GitHub offers to **install** the app or asks which repositories to give it, don't pick anything there: that would install it on your own repositories. Just **authorize** and continue.
+4. Check that **michealet/closet-app** appears in Codex's repository list. If it doesn't, ask Micheale to check the app is still installed on closet-app.
 
 ### 2. Create the environment
 
@@ -47,7 +53,7 @@ Codex builds the app in its own cloud computer, which needs to know how to set t
 
 This checks that everything works, end to end, with a tiny change.
 
-1. In Codex, pick the **closet-app** repository and type:
+1. Start a new task. Where it asks where to run, choose **Cloud** (the closet-app environment), **not "This computer"**: that would run on your own laptop, which isn't set up for it. Pick the **closet-app** repository, branch **main**, and type:
    > Change the subtitle on the Home page from "What are we wearing today?" to "What should I wear today?", following AGENTS.md.
 2. Wait for Codex to finish. It shows a summary, the changed files and whether its checks passed.
 3. Click the button to **create a pull request**.
@@ -63,7 +69,7 @@ If the checks are green and the preview shows the new subtitle, you're set up. (
 
 1. Make sure the issue exists on GitHub (with the **Feature** template) and note its number, for example **#20**.
 2. If you answered **Yes** or **Not sure** to "Does this need new data stored?", wait until Micheale says the database part is ready.
-3. In Codex, pick **closet-app** and type:
+3. In Codex, start a new task in **Cloud** (not "This computer"), pick **closet-app** and type:
    > Implement issue #20 following AGENTS.md.
 4. When it's done, read its summary. If it says it **stopped because the feature needs a database change**, don't create a pull request; tell Micheale (comment on the issue mentioning @michealet).
 5. Otherwise, **create the pull request** and continue on GitHub.
@@ -107,14 +113,15 @@ If a pull request changes one of Micheale's areas anyway, GitHub automatically a
 
 ## When something goes wrong
 
-| What you see                                                      | What to do                                                                                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Codex says the setup failed, or it can't install or run anything  | The environment needs checking. Ask Micheale to look at the setup script and variables above.                                   |
-| Checks stay red after two tries                                   | Comment on the pull request: "@michealet the checks keep failing, can you take a look?"                                         |
-| Codex says it needs a database change                             | Don't create a pull request yet. Comment on the issue mentioning @michealet, with what Codex said.                              |
-| The pull request says it **can't be merged because of conflicts** | Ask Codex: `Update the pull request with the latest main and resolve the conflicts.` If it still conflicts, ask Micheale.       |
-| The preview doesn't show your change                              | Wait a minute and reload. Vercel rebuilds after every update. Check the Vercel comment on the pull request for the latest link. |
-| You're not sure Codex understood                                  | Ask it to explain its plan before changing code: `Before writing code, describe your plan for issue #20.`                       |
+| What you see                                                            | What to do                                                                                                                            |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Codex says you don't have access to closet-app, or you're not the owner | Micheale installs the Codex app on closet-app (only he can). Then reconnect GitHub in Codex and authorize; don't install it yourself. |
+| Codex says the setup failed, or it can't install or run anything        | The environment needs checking. Ask Micheale to look at the setup script and variables above.                                         |
+| Checks stay red after two tries                                         | Comment on the pull request: "@michealet the checks keep failing, can you take a look?"                                               |
+| Codex says it needs a database change                                   | Don't create a pull request yet. Comment on the issue mentioning @michealet, with what Codex said.                                    |
+| The pull request says it **can't be merged because of conflicts**       | Ask Codex: `Update the pull request with the latest main and resolve the conflicts.` If it still conflicts, ask Micheale.             |
+| The preview doesn't show your change                                    | Wait a minute and reload. Vercel rebuilds after every update. Check the Vercel comment on the pull request for the latest link.       |
+| You're not sure Codex understood                                        | Ask it to explain its plan before changing code: `Before writing code, describe your plan for issue #20.`                             |
 
 ---
 
