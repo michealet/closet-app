@@ -28,7 +28,7 @@ beforeEach(() => {
   save.mockResolvedValue({ status: "success", message: "Saved" });
   remove.mockResolvedValue(true);
 });
-function submit() {
+function submit(another = false) {
   render(<AddClothingForm />);
   fireEvent.change(screen.getByLabelText("Name"), {
     target: { value: "Blue shirt" },
@@ -36,6 +36,16 @@ function submit() {
   fireEvent.change(screen.getByLabelText("Category"), {
     target: { value: "tops" },
   });
+  if (another) {
+    fireEvent.change(screen.getByLabelText("Brand (optional)"), {
+      target: { value: "Uniqlo" },
+    });
+    fireEvent.change(screen.getByLabelText("Notes (optional)"), {
+      target: { value: "Cotton" },
+    });
+    fireEvent.click(screen.getByLabelText("Blue"));
+    fireEvent.click(screen.getByLabelText("All Season"));
+  }
   const form = screen
     .getByRole("button", { name: "Save clothing" })
     .closest("form")!;
@@ -45,7 +55,18 @@ function submit() {
   vi.spyOn(globalThis, "FormData").mockImplementationOnce(function () {
     return data;
   });
-  fireEvent.submit(form);
+  fireEvent(
+    form,
+    new SubmitEvent("submit", {
+      bubbles: true,
+      cancelable: true,
+      submitter: another
+        ? (screen.getByRole("button", {
+            name: "Save & add another",
+          }) as HTMLButtonElement)
+        : null,
+    }),
+  );
 }
 it("sends only details and uploaded paths to the action and opens the closet", async () => {
   submit();
@@ -53,9 +74,34 @@ it("sends only details and uploaded paths to the action and opens the closet", a
   expect(save).toHaveBeenCalledWith({
     name: "Blue shirt",
     category: "tops",
+    brand: null,
+    notes: null,
+    colors: [],
+    seasons: [],
     ...uploaded,
   });
   expect(remove).not.toHaveBeenCalled();
+});
+it("clears fields and stays on Add clothing after Save & add another", async () => {
+  submit(true);
+  await waitFor(() => expect(screen.getByLabelText("Name")).toHaveValue(""));
+  expect(screen.getByLabelText("Category")).toHaveValue("");
+  expect(screen.getByLabelText("Photo")).toHaveValue("");
+  await waitFor(() => expect(screen.getByLabelText("Photo")).toHaveFocus());
+  expect(screen.getByLabelText("Brand (optional)")).toHaveValue("");
+  expect(screen.getByLabelText("Notes (optional)")).toHaveValue("");
+  expect(screen.getByLabelText("Blue")).not.toBeChecked();
+  expect(screen.getByLabelText("All Season")).not.toBeChecked();
+  expect(screen.getByText("Uniqlo")).toBeInTheDocument();
+  expect(push).not.toHaveBeenCalled();
+});
+it("keeps optional details when Save & add another fails", async () => {
+  save.mockResolvedValue({ status: "error", message: "Try again" });
+  submit(true);
+  await screen.findByRole("alert");
+  expect(screen.getByLabelText("Brand (optional)")).toHaveValue("Uniqlo");
+  expect(screen.getByLabelText("Blue")).toBeChecked();
+  expect(screen.getByLabelText("All Season")).toBeChecked();
 });
 it("cleans up rejected uploads and preserves form details for retry", async () => {
   save.mockResolvedValue({ status: "error", message: "Try again" });

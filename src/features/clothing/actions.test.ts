@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { addClothing } from "./actions";
+import { clothingDetailsSchema } from "./schema";
 
 const { insert, getClaims, revalidatePath } = vi.hoisted(() => ({
   insert: vi.fn(),
@@ -35,6 +36,10 @@ it("saves trimmed details and paths without accepting a user_id", async () => {
     id: itemId,
     name: "Linen shirt",
     category: "tops",
+    brand: null,
+    notes: null,
+    colors: [],
+    seasons: [],
     image_path: input.imagePath,
     thumbnail_path: input.thumbnailPath,
   });
@@ -47,11 +52,41 @@ it.each([
   { itemId: "invalid" },
   { imagePath: input.imagePath.replace(userId, itemId) },
   { thumbnailPath: input.imagePath },
+  { brand: "x".repeat(81) },
+  { notes: "x".repeat(501) },
+  { colors: ["unknown"] },
+  { seasons: ["all_season"] },
 ])("rejects invalid or foreign data %j", async (change) => {
   expect(await addClothing({ ...input, ...change })).toMatchObject({
     status: "error",
   });
   expect(insert).not.toHaveBeenCalled();
+});
+it("saves optional details with trimmed text and unique selections", async () => {
+  await addClothing({
+    ...input,
+    brand: " Uniqlo ",
+    notes: " Soft linen ",
+    colors: ["blue", "blue", "white"],
+    seasons: ["spring", "summer"],
+  });
+  expect(insert.mock.calls[0][0]).toMatchObject({
+    brand: "Uniqlo",
+    notes: "Soft linen",
+    colors: ["blue", "white"],
+    seasons: ["spring", "summer"],
+  });
+});
+it("accepts normalized empty optional details sent by the browser", async () => {
+  const details = clothingDetailsSchema.parse({
+    name: "Shirt",
+    category: "tops",
+    brand: "",
+    notes: "",
+  });
+  expect(await addClothing({ ...input, ...details })).toMatchObject({
+    status: "success",
+  });
 });
 it("requires a valid session", async () => {
   getClaims.mockResolvedValue({ data: null });
