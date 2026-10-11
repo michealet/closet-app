@@ -22,11 +22,22 @@ Next.js 16 App Router + TypeScript strict, pnpm 12, Node 24, Tailwind + shadcn/u
 
 ## Workflow
 
-- Every change is a PR against `main`. Put "Closes #N" in the description for the issue it implements, and fill in the PR template.
+- Every change is a PR against `main`. Put "Closes #N" in the description for the issue it implements (or name the FRD step, see below), and fill in the PR template.
 - One feature per PR. Keep PRs small (aim for < 400 changed lines, excluding `pnpm-lock.yaml`).
 - Before opening or updating a PR, run: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
 - CI also runs `pnpm test:db` (RLS tests) and `pnpm test:e2e` (Playwright). They need Docker/Supabase, so you may not be able to run them; if CI fails, read the logs, fix the cause and push to the same branch.
 - If the feature needs a database change, stop and describe the change in the PR description (tables, columns, who may read/write). DevOps writes and merges the migration first; then the feature PR continues.
+
+### "Build the next step of the FRD"
+
+When asked to build the next step (no issue needed):
+
+1. Open the build order in `docs/specs/FRD.md` §16 and take the **first row that isn't ✅ done**. Build only that step. If its status says "part N of M", build the next part.
+2. Read that step's requirement IDs in the FRD, and `src/lib/constants.ts`, `src/types/database.ts` and `src/lib/images/` before writing code.
+3. **Stop before writing code** if the step needs a database change (a table or column that doesn't exist in `src/types/database.ts`) or a new dependency that has no ADR in `docs/decisions/`. Explain in plain words what's needed, so Maya can pass it to Micheale. Don't create a PR.
+4. If the step won't fit in one PR (< 400 changed lines), build a first part that works on its own and say what's left.
+5. In the same PR, update the step's Status in §16: `✅ done`, or `part 1 of 2` (and so on).
+6. In the PR description, instead of "Closes #N", write `FRD step N: <name>` and list the requirement IDs covered, and any not yet covered.
 
 ### Environment (for agents running in their own container)
 
