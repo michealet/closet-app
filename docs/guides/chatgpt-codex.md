@@ -2,7 +2,7 @@
 
 A step-by-step guide for Maya. Everything here happens in **ChatGPT** (website or phone app) and **GitHub**. You never need the command line or to install anything.
 
-For how the whole process fits together (issues, checks, previews, approving), see [Maya's guide in the README](../../README.md#mayas-guide).
+For how the whole process fits together (issues, checks, previews, merging), see [Maya's guide in the README](../../README.md#mayas-guide).
 
 > Codex's screens change from time to time. If a button below has a slightly different name, look for the closest match, or ask Micheale.
 
@@ -57,7 +57,7 @@ This checks that everything works, end to end, with a tiny change.
    > Change the subtitle on the Home page from "What are we wearing today?" to "What should I wear today?", following AGENTS.md.
 2. Wait for Codex to finish. It shows a summary, the changed files and whether its checks passed.
 3. Click the button to **create a pull request**.
-4. On GitHub, follow steps 3–5 of [Maya's guide](../../README.md#mayas-guide): wait for the green checks, open the preview, then approve.
+4. On GitHub, follow steps 3–5 of [Maya's guide](../../README.md#mayas-guide): wait for the green checks, open the preview, then comment "looks good". Micheale approves and merges.
 
 If the checks are green and the preview shows the new subtitle, you're set up. (Whether we keep the new wording is up to you.)
 
