@@ -1,10 +1,18 @@
-import { ShirtIcon } from "lucide-react";
+import { SearchXIcon, ShirtIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  filtersToQuery,
+  isFiltered,
+  parseFilters,
+  searchFilter,
+} from "@/features/clothing/closet-filters";
 import { ClosetGrid } from "@/features/clothing/closet-grid";
+import { ClosetToolbar } from "@/features/clothing/closet-toolbar";
+import { closetSuggestions } from "@/features/clothing/queries";
 import { signedImageUrls } from "@/lib/images/storage";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,20 +22,37 @@ export const metadata: Metadata = { title: "Closet" };
 const PAGE_SIZE = 60;
 
 export default async function ClosetPage(props: PageProps<"/closet">) {
-  const { show } = await props.searchParams;
+  const params = await props.searchParams;
+  const filters = parseFilters(params);
+  const { show } = params;
   const limit = Math.min(
     Math.max(Number(show) || PAGE_SIZE, PAGE_SIZE),
     PAGE_SIZE * 50,
   );
 
   const supabase = await createClient();
-  const { data, count, error } = await supabase
+  const { brands, tags } = await closetSuggestions(supabase);
+  let query = supabase
     .from("clothing_items")
     .select("id, name, image_path, thumbnail_path, is_favorite", {
       count: "exact",
-    })
-    .order("created_at", { ascending: false })
-    .range(0, limit - 1);
+    });
+  if (filters.category) query = query.eq("category", filters.category);
+  if (filters.color) query = query.contains("colors", [filters.color]);
+  if (filters.season) query = query.contains("seasons", [filters.season]);
+  if (filters.brand) query = query.eq("brand", filters.brand);
+  if (filters.tag) query = query.contains("tags", [filters.tag]);
+  if (filters.favorites) query = query.eq("is_favorite", true);
+  const search = searchFilter(filters.q, tags);
+  if (search) query = query.or(search);
+  query =
+    filters.sort === "name"
+      ? query.order("name", { ascending: true })
+      : query.order("created_at", { ascending: false });
+  const { data, count, error } = await query.order("id").range(0, limit - 1);
+  const filtered = isFiltered(filters);
+  const current = filtersToQuery(filters);
+  const moreQuery = `${current ? `${current}&` : "?"}show=${limit + PAGE_SIZE}`;
   const items = data ?? [];
   const urls = await signedImageUrls(
     supabase,
@@ -44,6 +69,9 @@ export default async function ClosetPage(props: PageProps<"/closet">) {
           </Link>
         }
       />
+      {(items.length > 0 || filtered) && (
+        <ClosetToolbar filters={filters} brands={brands} tags={tags} />
+      )}
       {error ? (
         <p role="alert">
           Could not load your closet. Please refresh and try again.
@@ -62,7 +90,7 @@ export default async function ClosetPage(props: PageProps<"/closet">) {
           {(count ?? 0) > items.length && (
             <div className="mt-8 flex justify-center">
               <Link
-                href={`/closet?show=${limit + PAGE_SIZE}`}
+                href={`/closet${moreQuery}`}
                 scroll={false}
                 className={buttonVariants({ variant: "secondary", size: "lg" })}
               >
@@ -71,6 +99,20 @@ export default async function ClosetPage(props: PageProps<"/closet">) {
             </div>
           )}
         </>
+      ) : filtered ? (
+        <EmptyState
+          icon={SearchXIcon}
+          title="No matches"
+          description="Nothing in your closet matches. Try fewer filters or another word."
+          action={
+            <Link
+              href="/closet"
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
+            >
+              Clear filters
+            </Link>
+          }
+        />
       ) : (
         <EmptyState
           icon={ShirtIcon}

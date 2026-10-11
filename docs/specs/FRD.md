@@ -297,7 +297,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 | 0   | Schema, storage bucket, app shell, navigation, design tokens _(Micheale)_ | §13, NV-_, DS-_  | ✅ done |
 | 1   | Add clothing (upload, form, save)                                         | AC-*             | ✅ done |
 | 2   | Digital closet grid + Item Detail                                         | CL-1, CL-5, ID-* | ✅ done |
-| 3   | Categories, filters, search                                               | CL-2–4, CL-6     | to do   |
+| 3   | Categories, filters, search                                               | CL-2–4, CL-6     | ✅ done |
 | 4   | Outfit creator (canvas, drag, resize)                                     | OC-1–8, OC-11–13 | to do   |
 | 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      | to do   |
 | 6   | Saved outfits page + actions                                              | OU-*             | to do   |
