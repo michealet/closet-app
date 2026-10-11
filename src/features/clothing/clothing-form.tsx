@@ -130,7 +130,7 @@ export function ClothingForm({
             router.refresh();
             return;
           }
-          router.push("/closet");
+          router.push(item ? `/closet/${item.id}` : "/closet");
           router.refresh();
         }
       } catch (cause) {
