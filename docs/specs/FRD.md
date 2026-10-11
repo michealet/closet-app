@@ -69,8 +69,8 @@ A personal wardrobe app where the user uploads photos of the clothing she owns, 
 | ID   | Requirement                                                                                                                                                   |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CL-1 | Show all clothing in a visual image grid: 2 columns on mobile, 4–6 on desktop. The image is the focus, with the name shown small underneath and a heart icon. |
-| CL-2 | **Search bar** that matches name, brand, color and notes.                                                                                                     |
-| CL-3 | **Filters:** Category, Color, Season, Brand, Favorites. Filters combine with AND. The active filters show as removable chips.                                 |
+| CL-2 | **Search bar** that matches name, brand, color, tags and notes.                                                                                               |
+| CL-3 | **Filters:** Category, Color, Season, Brand, Tag, Favorites. Filters combine with AND. The active filters show as removable chips.                            |
 | CL-4 | Category quick-tabs or chips across the top (All, Tops, Bottoms, …).                                                                                          |
 | CL-5 | Tapping an item opens its Item Detail page (§7).                                                                                                              |
 | CL-6 | Sort options: newest first (the default), name A–Z.                                                                                                           |
@@ -96,7 +96,7 @@ A preset palette shown as swatches (multi-select: an item can have several color
 | AC-1  | **Add Item** flow on one mobile-friendly form.                                                                                                                  |
 | AC-2  | **Photo** (required): upload from the camera roll or take a photo with the camera on mobile. Accept JPEG, PNG, WebP and HEIC.                                   |
 | AC-3  | Before upload, the image is resized and compressed on the device (longest edge ≤ 1600px, WebP/JPEG) and phone-rotation (EXIF orientation) is corrected.         |
-| AC-4  | **Name** (required) and **Category** (required, from the fixed list).                                                                                           |
+| AC-4  | **Name** (optional: if left empty, it's made from the details, e.g. "Navy Zara dress"; #36) and **Category** (required, from the fixed list).                   |
 | AC-5  | **Brand** (optional, free text, suggesting brands already used).                                                                                                |
 | AC-6  | **Colors** (optional, swatch picker, multi-select).                                                                                                             |
 | AC-7  | **Seasons** (optional, multi-select).                                                                                                                           |
@@ -105,6 +105,7 @@ A preset palette shown as swatches (multi-select: an item can have several color
 | AC-10 | The same form is used for **Edit**, pre-filled. The photo can be replaced.                                                                                      |
 | AC-11 | A user can add several items in a row without navigating away ("Save & add another").                                                                           |
 | AC-12 | **Background removal is a future feature.** Design the image pipeline so a processed version of the image can be stored alongside the original later (see §13). |
+| AC-13 | **Tags** (optional, free words such as "linen" or "thrifted", suggesting tags already used; at most 20, each up to 30 characters; #36).                         |
 
 ---
 
@@ -208,6 +209,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 | colors                  | `clothing_color[]`          | preset palette, §5; several allowed      |
 | color                   | enum `clothing_color`, null | deprecated (use `colors`); to be dropped |
 | seasons                 | `season[]`                  | Spring/Summer/Fall/Winter                |
+| tags                    | `text[]`                    | lowercase, ≤ 20 × 30 chars (#36)         |
 | notes                   | text, null                  | ≤ 500 chars                              |
 | image_path              | text, required              | Supabase Storage path (original)         |
 | thumbnail_path          | text, null                  | small version for grids (NF-2)           |

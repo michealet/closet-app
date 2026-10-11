@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 function submit(another = false) {
   render(<ClothingForm />);
-  fireEvent.change(screen.getByLabelText("Name"), {
+  fireEvent.change(screen.getByLabelText("Name (optional)"), {
     target: { value: "Blue shirt" },
   });
   fireEvent.change(screen.getByLabelText("Category"), {
@@ -80,13 +80,16 @@ it("sends only details and uploaded paths to the action and opens the closet", a
     notes: null,
     colors: [],
     seasons: [],
+    tags: [],
     ...uploaded,
   });
   expect(remove).not.toHaveBeenCalled();
 });
 it("clears fields and stays on Add clothing after Save & add another", async () => {
   submit(true);
-  await waitFor(() => expect(screen.getByLabelText("Name")).toHaveValue(""));
+  await waitFor(() =>
+    expect(screen.getByLabelText("Name (optional)")).toHaveValue(""),
+  );
   expect(screen.getByLabelText("Category")).toHaveValue("");
   expect(screen.getByLabelText("Photo")).toHaveValue("");
   await waitFor(() => expect(screen.getByLabelText("Photo")).toHaveFocus());
@@ -110,7 +113,7 @@ it("cleans up rejected uploads and preserves form details for retry", async () =
   submit();
   await screen.findByRole("alert");
   expect(remove.mock.calls[0][1]).toEqual(["full.jpg", "thumb.jpg"]);
-  expect(screen.getByLabelText("Name")).toHaveValue("Blue shirt");
+  expect(screen.getByLabelText("Name (optional)")).toHaveValue("Blue shirt");
   expect(push).not.toHaveBeenCalled();
 });
 it("keeps photos when a lost response might hide a successful save", async () => {
@@ -130,6 +133,7 @@ const item: EditableItem = {
   notes: "Soft",
   colors: ["white"],
   seasons: ["summer"],
+  tags: ["linen"],
   imagePath: "u/items/item-1.webp",
   thumbnailPath: "u/items/item-1_thumb.webp",
   photoUrl: null,
@@ -163,6 +167,7 @@ it("pre-fills Edit and saves changes without requiring a new photo", async () =>
     notes: "Soft",
     colors: ["white"],
     seasons: ["summer"],
+    tags: ["linen"],
   });
 });
 it("replaces the photo and removes the old files when the format changed", async () => {
@@ -191,4 +196,39 @@ it("removes a new-format photo when saving the edit fails", async () => {
   await screen.findByRole("alert");
   expect(remove.mock.calls[0][1]).toEqual(["full.jpg", "thumb.jpg"]);
   expect(push).not.toHaveBeenCalled();
+});
+
+it("leaves Name empty to use the suggestion made from the details", async () => {
+  render(<ClothingForm />);
+  const name = screen.getByLabelText("Name (optional)");
+  fireEvent.change(screen.getByLabelText("Category"), {
+    target: { value: "dresses" },
+  });
+  fireEvent.click(screen.getByLabelText("Navy"));
+  fireEvent.change(screen.getByLabelText("Brand (optional)"), {
+    target: { value: "Zara" },
+  });
+  expect(name).toHaveAttribute("placeholder", "Navy Zara dress");
+});
+it("sends tags, including one still being typed", async () => {
+  render(<ClothingForm />);
+  fireEvent.change(screen.getByLabelText("Category"), {
+    target: { value: "tops" },
+  });
+  const draft = screen.getByLabelText("Tags (optional)");
+  fireEvent.change(draft, { target: { value: "Linen" } });
+  fireEvent.keyDown(draft, { key: "Enter" });
+  fireEvent.change(draft, { target: { value: "thrifted" } });
+  const form = draft.closest("form")!;
+  const data = new FormData(form);
+  data.set("photo", new File(["p"], "a.jpg", { type: "image/jpeg" }));
+  vi.spyOn(globalThis, "FormData").mockImplementationOnce(function () {
+    return data;
+  });
+  fireEvent.submit(form);
+  await waitFor(() => expect(save).toHaveBeenCalled());
+  expect(save.mock.calls[0][0]).toMatchObject({
+    name: null,
+    tags: ["linen", "thrifted"],
+  });
 });

@@ -6,7 +6,12 @@ import type { ActionState } from "@/lib/action-state";
 import { isItemImagePath } from "@/lib/images/paths";
 import { removeClosetFiles } from "@/lib/images/storage";
 import { createClient } from "@/lib/supabase/server";
-import { clothingSchema, clothingUpdateSchema, favoriteSchema } from "./schema";
+import {
+  clothingSchema,
+  clothingUpdateSchema,
+  favoriteSchema,
+  withName,
+} from "./schema";
 
 export async function addClothing(input: unknown): Promise<ActionState> {
   const parsed = clothingSchema.safeParse(input);
@@ -28,7 +33,7 @@ export async function addClothing(input: unknown): Promise<ActionState> {
 
   const { error } = await supabase.from("clothing_items").insert({
     id: itemId,
-    ...details,
+    ...withName(details),
     image_path: imagePath,
     thumbnail_path: thumbnailPath,
   });
@@ -68,7 +73,7 @@ export async function updateClothing(input: unknown): Promise<ActionState> {
   // RLS hides other users' rows, so updating one changes nothing.
   const { data: rows, error } = await supabase
     .from("clothing_items")
-    .update({ ...details, ...photo })
+    .update({ ...withName(details), ...photo })
     .eq("id", itemId)
     .select("id");
   if (error)

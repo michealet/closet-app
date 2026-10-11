@@ -23,6 +23,7 @@ import { removeClosetFiles } from "@/lib/images/storage";
 import { uploadItemPhoto } from "@/lib/images/upload";
 import { createClient } from "@/lib/supabase/client";
 import { addClothing, updateClothing } from "./actions";
+import { suggestName } from "./labels";
 import { clothingDetailsSchema } from "./schema";
 import {
   ClothingOptionalFields,
@@ -42,9 +43,11 @@ export type EditableItem = OptionalDefaults & {
 /** Add form, or with `item` the same form pre-filled for editing (AC-10). */
 export function ClothingForm({
   brands = [],
+  tags = [],
   item,
 }: {
   brands?: string[];
+  tags?: string[];
   item?: EditableItem;
 }) {
   const router = useRouter();
@@ -52,6 +55,8 @@ export function ClothingForm({
   const [error, setError] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [brandOptions, setBrandOptions] = useState(brands);
+  const [tagOptions, setTagOptions] = useState(tags);
+  const [suggestion, setSuggestion] = useState(item ? suggestName(item) : "");
   const photoRef = useRef<HTMLInputElement>(null);
   const focusedReset = useRef(0);
   useEffect(() => {
@@ -60,6 +65,17 @@ export function ClothingForm({
       focusedReset.current = resetKey;
     }
   }, [resetKey, pending]);
+
+  /** Shows the name Save will use if Name stays empty (#36). */
+  function updateSuggestion(form: HTMLFormElement) {
+    const data = new FormData(form);
+    const details = clothingDetailsSchema.safeParse({
+      category: data.get("category"),
+      brand: data.get("brand"),
+      colors: data.getAll("colors"),
+    });
+    setSuggestion(details.success ? suggestName(details.data) : "");
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,6 +91,10 @@ export function ClothingForm({
       notes: form.get("notes"),
       colors: form.getAll("colors"),
       seasons: form.getAll("seasons"),
+      tags: [
+        ...form.getAll("tags"),
+        ...String(form.get("tagDraft") ?? "").split(","),
+      ].filter((tag) => String(tag).trim()),
     });
     const entry = form.get("photo");
     const photo = entry instanceof File && entry.size ? entry : null;
@@ -126,6 +146,10 @@ export function ClothingForm({
               setBrandOptions((values) =>
                 [...new Set([...values, details.data.brand!])].sort(),
               );
+            setTagOptions((values) =>
+              [...new Set([...values, ...details.data.tags])].sort(),
+            );
+            setSuggestion("");
             setResetKey((key) => key + 1);
             router.refresh();
             return;
@@ -145,7 +169,12 @@ export function ClothingForm({
   }
 
   return (
-    <form key={resetKey} onSubmit={submit} className="max-w-lg space-y-6">
+    <form
+      key={resetKey}
+      onSubmit={submit}
+      onChange={(event) => updateSuggestion(event.currentTarget)}
+      className="max-w-lg space-y-6"
+    >
       <fieldset disabled={pending} className="space-y-6">
         <div className="space-y-2">
           {item?.photoUrl && (
@@ -171,15 +200,19 @@ export function ClothingForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="name">Name</Label>
+          <Label htmlFor="name">Name (optional)</Label>
           <Input
             id="name"
             name="name"
-            required
             maxLength={NAME_MAX}
             defaultValue={item?.name}
-            placeholder="e.g. Blue linen shirt"
+            placeholder={suggestion || "Named from its details"}
+            aria-describedby="name-hint"
           />
+          <p id="name-hint" className="text-sm text-muted-foreground">
+            Leave it empty to use{" "}
+            {suggestion ? `"${suggestion}"` : "a name made from its details"}.
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
@@ -200,7 +233,11 @@ export function ClothingForm({
             ))}
           </select>
         </div>
-        <ClothingOptionalFields brands={brandOptions} defaults={item} />
+        <ClothingOptionalFields
+          brands={brandOptions}
+          tags={tagOptions}
+          defaults={item}
+        />
         <Button type="submit" size="lg" className="w-full">
           {pending ? "Saving…" : item ? "Save changes" : "Save clothing"}
         </Button>

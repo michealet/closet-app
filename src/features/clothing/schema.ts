@@ -1,9 +1,22 @@
 import { z } from "zod";
-import { BRAND_MAX, NAME_MAX, NOTES_MAX } from "@/lib/constants";
+import {
+  BRAND_MAX,
+  NAME_MAX,
+  NOTES_MAX,
+  TAG_MAX,
+  TAGS_MAX,
+} from "@/lib/constants";
 import { Constants } from "@/types/database";
+import { normalizeTag, suggestName } from "./labels";
 
 export const clothingDetailsSchema = z.object({
-  name: z.string().trim().min(1, "Give your clothing a name.").max(NAME_MAX),
+  // Optional: an empty name is made from the details (#36, see withName).
+  name: z
+    .string()
+    .trim()
+    .max(NAME_MAX)
+    .nullish()
+    .transform((value) => value || null),
   category: z.enum(Constants.public.Enums.clothing_category, {
     error: "Choose a category.",
   }),
@@ -29,7 +42,29 @@ export const clothingDetailsSchema = z.object({
     .max(Constants.public.Enums.season.length)
     .default([])
     .transform((values) => [...new Set(values)]),
+  tags: z
+    .array(
+      z
+        .string()
+        .transform(normalizeTag)
+        .pipe(
+          z
+            .string()
+            .min(1)
+            .max(TAG_MAX, `Tags are at most ${TAG_MAX} characters.`),
+        ),
+    )
+    .default([])
+    .transform((values) => [...new Set(values)])
+    .pipe(z.array(z.string()).max(TAGS_MAX, `Use at most ${TAGS_MAX} tags.`)),
 });
+
+/** The details to save, with a generated name when none was typed. */
+export function withName<T extends z.output<typeof clothingDetailsSchema>>(
+  details: T,
+): Omit<T, "name"> & { name: string } {
+  return { ...details, name: details.name ?? suggestName(details) };
+}
 
 export const clothingSchema = clothingDetailsSchema.extend({
   itemId: z.uuid(),

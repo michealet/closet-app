@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PageHeader } from "@/components/shared/page-header";
 import { ClothingForm } from "@/features/clothing/clothing-form";
-import { brandSuggestions } from "@/features/clothing/queries";
+import { closetSuggestions } from "@/features/clothing/queries";
 import { signedImageUrls } from "@/lib/images/storage";
 import { createClient } from "@/lib/supabase/server";
 
@@ -17,15 +17,15 @@ export default async function EditClothingPage(
   if (!z.uuid().safeParse(id).success) notFound();
 
   const supabase = await createClient();
-  const [{ data: item }, { brands }] = await Promise.all([
+  const [{ data: item }, { brands, tags }] = await Promise.all([
     supabase
       .from("clothing_items")
       .select(
-        "id, name, category, brand, colors, seasons, notes, image_path, thumbnail_path",
+        "id, name, category, brand, colors, seasons, tags, notes, image_path, thumbnail_path",
       )
       .eq("id", id)
       .maybeSingle(),
-    brandSuggestions(supabase),
+    closetSuggestions(supabase),
   ]);
   if (!item) notFound();
 
@@ -36,6 +36,7 @@ export default async function EditClothingPage(
       <PageHeader title="Edit clothing" />
       <ClothingForm
         brands={brands}
+        tags={tags}
         item={{
           id: item.id,
           name: item.name,
@@ -44,6 +45,7 @@ export default async function EditClothingPage(
           notes: item.notes,
           colors: item.colors,
           seasons: item.seasons,
+          tags: item.tags,
           imagePath: item.image_path,
           thumbnailPath: item.thumbnail_path,
           photoUrl: urls.get(preview) ?? null,
