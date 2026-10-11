@@ -150,7 +150,7 @@ function submitEdit(photo?: File) {
 }
 it("pre-fills Edit and saves changes without requiring a new photo", async () => {
   submitEdit();
-  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet"));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet/item-1"));
   expect(screen.getByLabelText("Brand (optional)")).toHaveValue("Uniqlo");
   expect(screen.getByLabelText("White")).toBeChecked();
   expect(screen.queryByText("Save & add another")).not.toBeInTheDocument();
@@ -167,7 +167,7 @@ it("pre-fills Edit and saves changes without requiring a new photo", async () =>
 });
 it("replaces the photo and removes the old files when the format changed", async () => {
   submitEdit(new File(["photo"], "new.jpg", { type: "image/jpeg" }));
-  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet"));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet/item-1"));
   expect(upload.mock.calls[0][1]).toBe("item-1");
   expect(update.mock.calls[0][0]).toMatchObject({
     imagePath: "full.jpg",
@@ -182,7 +182,7 @@ it("keeps the files when a replaced photo reused the same paths", async () => {
     thumbnailPath: item.thumbnailPath,
   });
   submitEdit(new File(["photo"], "new.webp", { type: "image/webp" }));
-  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet"));
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/closet/item-1"));
   expect(remove).not.toHaveBeenCalled();
 });
 it("removes a new-format photo when saving the edit fails", async () => {

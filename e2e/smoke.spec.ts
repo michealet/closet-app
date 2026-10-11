@@ -19,6 +19,7 @@ for (const path of [
   "/",
   "/closet",
   "/closet/new",
+  "/closet/00000000-0000-4000-8000-000000000000",
   "/closet/00000000-0000-4000-8000-000000000000/edit",
   "/outfits",
   "/outfits/new",
