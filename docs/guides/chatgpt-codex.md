@@ -57,7 +57,7 @@ This checks that everything works, end to end, with a tiny change.
    > Change the subtitle on the Home page from "What are we wearing today?" to "What should I wear today?", following AGENTS.md.
 2. Wait for Codex to finish. It shows a summary, the changed files and whether its checks passed.
 3. Click the button to **create a pull request**.
-4. On GitHub, follow steps 3–5 of [Maya's guide](../../README.md#mayas-guide): wait for the green checks, open the preview, then comment "looks good". Micheale approves and merges.
+4. On GitHub, follow steps 3–5 of [Maya's guide](../../README.md#mayas-guide): wait for the green checks, open the preview, then tell Micheale it looks good (a text is fine). Micheale approves and merges.
 
 If the checks are green and the preview shows the new subtitle, you're set up. (Whether we keep the new wording is up to you.)
 
@@ -105,7 +105,7 @@ Go back to **the same Codex task** that created the pull request and ask for the
 
 ### On your phone
 
-The ChatGPT phone app includes Codex. It's handy for starting a task or checking progress. For everything after the pull request is created, use the **GitHub** app (signed in as `mayatp2331`): it notifies you when the preview is ready, opens the preview link, and is where you comment "@michealet looks good". Codex can't post that comment for you.
+The ChatGPT phone app includes Codex. It's handy for starting a task or checking progress. For everything after the pull request is created, use the **GitHub** app (signed in as `mayatp2331`): it notifies you when the preview is ready and opens the preview link. When it looks good, tell Micheale (a text is fine).
 
 ---
 
