@@ -49,3 +49,8 @@ export const clothingUpdateSchema = clothingDetailsSchema
       (imagePath === undefined) === (thumbnailPath === undefined),
     "Upload a photo for this item again.",
   );
+
+export const favoriteSchema = z.object({
+  id: z.uuid(),
+  isFavorite: z.boolean(),
+});

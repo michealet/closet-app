@@ -5,9 +5,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { EmptyState } from "@/components/shared/empty-state";
+import { HeartButton } from "@/components/shared/heart-button";
 import { ImageTile } from "@/components/shared/image-tile";
 import { PageHeader } from "@/components/shared/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import { setItemFavorite } from "@/features/clothing/actions";
+import { DeleteItemButton } from "@/features/clothing/delete-item-button";
 import { colorDetails, seasonsLabel } from "@/features/clothing/labels";
 import { CATEGORY_LABELS } from "@/lib/constants";
 import { signedImageUrls } from "@/lib/images/storage";
@@ -15,7 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Item" };
 
-/** Item Detail (FRD §7): ID-1, ID-3 and Edit (ID-4). */
+/** Item Detail (FRD §7). */
 export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
   const { id } = await props.params;
   if (!z.uuid().safeParse(id).success) notFound();
@@ -24,7 +27,7 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
   const { data: item } = await supabase
     .from("clothing_items")
     .select(
-      "id, name, category, brand, colors, seasons, notes, image_path, outfit_items(outfit:outfits(id, name, thumbnail_path))",
+      "id, name, category, brand, colors, seasons, notes, image_path, is_favorite, outfit_items(outfit:outfits(id, name, thumbnail_path))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -66,13 +69,21 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
 
   return (
     <div className="md:grid md:grid-cols-2 md:gap-10">
-      <ImageTile
-        src={urls.get(item.image_path)}
-        alt={item.name}
-        sizes="(min-width: 768px) 50vw, 100vw"
-        priority
-        className="mb-6 md:mb-0"
-      />
+      <div className="relative mb-6 md:mb-0">
+        <ImageTile
+          src={urls.get(item.image_path)}
+          alt={item.name}
+          sizes="(min-width: 768px) 50vw, 100vw"
+          priority
+        />
+        <HeartButton
+          id={item.id}
+          name={item.name}
+          isFavorite={item.is_favorite}
+          action={setItemFavorite}
+          className="absolute top-3 right-3"
+        />
+      </div>
       <div>
         <PageHeader
           title={item.name}
@@ -127,6 +138,14 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
             />
           )}
         </section>
+
+        <div className="mt-10">
+          <DeleteItemButton
+            itemId={item.id}
+            name={item.name}
+            outfitCount={outfits.length}
+          />
+        </div>
       </div>
     </div>
   );
