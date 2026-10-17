@@ -1,6 +1,13 @@
 import { expect, it } from "vitest";
 import type { ClothingCategory } from "@/lib/constants";
-import { MIN_WIDTH, fitItem, placeItem, type CanvasItem } from "./layout";
+import {
+  MIN_WIDTH,
+  fitItem,
+  moveLayer,
+  placeItem,
+  scaleItem,
+  type CanvasItem,
+} from "./layout";
 
 const categories = new Map<string, ClothingCategory>();
 const categoryOf = (id: string) => categories.get(id);
@@ -54,4 +61,24 @@ it("fits moved or resized pieces back into the canvas", () => {
   const item = { id: "a", x: -0.2, y: 1.4, width: 3, z: 0 };
   expect(fitItem(item)).toEqual({ id: "a", x: 0, y: 1, width: 1, z: 0 });
   expect(fitItem({ ...item, width: 0 }).width).toBe(MIN_WIDTH);
+});
+
+it("moves a piece up or down one layer", () => {
+  const items = [
+    { id: "a", x: 0.5, y: 0.5, width: 0.3, z: 0 },
+    { id: "b", x: 0.5, y: 0.5, width: 0.3, z: 4 },
+    { id: "c", x: 0.5, y: 0.5, width: 0.3, z: 7 },
+  ];
+  const z = (list: CanvasItem[]) => list.map((item) => `${item.id}${item.z}`);
+  expect(z(moveLayer(items, "a", 1))).toEqual(["a1", "b0", "c2"]);
+  expect(z(moveLayer(items, "c", -1))).toEqual(["a0", "b2", "c1"]);
+  expect(moveLayer(items, "c", 1)).toBe(items);
+  expect(moveLayer(items, "a", -1)).toBe(items);
+});
+
+it("scales a piece within the allowed sizes", () => {
+  const item = { id: "a", x: 0.5, y: 0.5, width: 0.4, z: 0 };
+  expect(scaleItem(item, 1.25).width).toBeCloseTo(0.5);
+  expect(scaleItem(item, 10).width).toBe(1);
+  expect(scaleItem(item, 0.01).width).toBe(MIN_WIDTH);
 });

@@ -72,3 +72,26 @@ export function fitItem(item: CanvasItem): CanvasItem {
     width: clamp(item.width, MIN_WIDTH, 1),
   };
 }
+
+/**
+ * Moves a piece one layer up (+1) or down (-1) (OC-6). Layers come back
+ * numbered 0, 1, 2… in drawing order.
+ */
+export function moveLayer(
+  items: CanvasItem[],
+  id: string,
+  step: 1 | -1,
+): CanvasItem[] {
+  const order = [...items].sort((a, b) => a.z - b.z);
+  const from = order.findIndex((item) => item.id === id);
+  const to = from + step;
+  if (from < 0 || to < 0 || to >= order.length) return items;
+  [order[from], order[to]] = [order[to], order[from]];
+  const z = new Map(order.map((item, index) => [item.id, index]));
+  return items.map((item) => ({ ...item, z: z.get(item.id)! }));
+}
+
+/** Makes a piece bigger or smaller by `factor`, keeping it valid (OC-5, OC-6). */
+export function scaleItem(item: CanvasItem, factor: number): CanvasItem {
+  return fitItem({ ...item, width: item.width * factor });
+}

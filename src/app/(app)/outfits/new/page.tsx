@@ -13,8 +13,11 @@ export const metadata: Metadata = { title: "Create an outfit" };
 /** Picker size cap; the closet is expected to stay in the hundreds (NF-2). */
 const PICKER_LIMIT = 1000;
 
-/** Outfit creator (FRD §8). Saving comes with FRD step 5. */
-export default async function CreateOutfitPage() {
+/** Outfit creator (FRD §8); `?item=` starts with that piece (OC-13). */
+export default async function CreateOutfitPage(
+  props: PageProps<"/outfits/new">,
+) {
+  const { item } = await props.searchParams;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clothing_items")
@@ -38,6 +41,7 @@ export default async function CreateOutfitPage() {
         </p>
       ) : items.length ? (
         <OutfitCreator
+          startWith={typeof item === "string" ? item : undefined}
           closet={items.map((item) => ({
             id: item.id,
             name: item.name,
