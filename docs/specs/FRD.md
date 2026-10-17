@@ -299,7 +299,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 | 2   | Digital closet grid + Item Detail                                         | CL-1, CL-5, ID-* | ✅ done     |
 | 3   | Categories, filters, search                                               | CL-2–4, CL-6     | ✅ done     |
 | 4   | Outfit creator (canvas, drag, resize)                                     | OC-1–8, OC-11–13 | part 1 of 2 |
-| 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      | to do       |
+| 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      | ✅ done     |
 | 6   | Saved outfits page + actions                                              | OU-*             | to do       |
 | 7   | Favorites (items + outfits)                                               | FV-*             | to do       |
 | 8   | Outfit calendar                                                           | CA-*             | to do       |

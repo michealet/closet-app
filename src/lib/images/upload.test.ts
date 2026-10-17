@@ -14,6 +14,8 @@ vi.mock("@/lib/supabase/client", () => ({
 
 vi.mock("./prepare", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./prepare")>()),
+  // jsdom has no canvas encoder.
+  canEncodeWebp: vi.fn(async () => true),
   prepareImage: vi.fn(async () => ({
     full: new Blob(["full"], { type: "image/jpeg" }),
     thumb: new Blob(["thumb"], { type: "image/jpeg" }),
@@ -24,7 +26,7 @@ vi.mock("./prepare", async (importOriginal) => ({
   })),
 }));
 
-const { uploadItemPhoto } = await import("./upload");
+const { uploadItemPhoto, uploadOutfitThumbnail } = await import("./upload");
 const photo = new File(["x"], "photo.jpg", { type: "image/jpeg" });
 
 beforeEach(() => {
@@ -73,5 +75,37 @@ describe("uploadItemPhoto", () => {
     await expect(uploadItemPhoto(photo)).rejects.toThrow(/Couldn't upload/);
     expect(upload).toHaveBeenCalledTimes(1);
     expect(remove).not.toHaveBeenCalled();
+  });
+});
+
+describe("uploadOutfitThumbnail", () => {
+  const outfitId = "00000000-0000-4000-8000-0000000000f1";
+  const canvas = (blob: Blob | null) =>
+    ({
+      toBlob: (done: (value: Blob | null) => void) => done(blob),
+    }) as unknown as HTMLCanvasElement;
+
+  it("uploads the canvas picture into the user's outfits folder", async () => {
+    const path = await uploadOutfitThumbnail(
+      canvas(new Blob(["png"])),
+      outfitId,
+    );
+
+    expect(path).toBe(`${userId}/outfits/${outfitId}.webp`);
+    expect(upload).toHaveBeenCalledWith(
+      path,
+      expect.any(Blob),
+      expect.objectContaining({ upsert: true }),
+    );
+  });
+
+  it("reports a canvas that couldn't be encoded or uploaded", async () => {
+    await expect(uploadOutfitThumbnail(canvas(null), outfitId)).rejects.toThrow(
+      ImageError,
+    );
+    upload.mockResolvedValueOnce({ data: null, error: new Error("down") });
+    await expect(
+      uploadOutfitThumbnail(canvas(new Blob(["png"])), outfitId),
+    ).rejects.toThrow(ImageError);
   });
 });
