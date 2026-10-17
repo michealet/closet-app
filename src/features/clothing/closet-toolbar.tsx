@@ -14,6 +14,7 @@ import {
   SEASON_LABELS,
   SEASON_OPTIONS,
 } from "@/lib/constants";
+import { CHIP } from "@/components/shared/chip";
 import { cn } from "@/lib/utils";
 import {
   NO_FILTERS,
@@ -24,9 +25,6 @@ import {
 
 const SELECT =
   "h-11 w-full rounded-lg border border-input bg-background px-3 text-base focus-visible:outline-ring";
-
-export const CHIP =
-  "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** Search (CL-2), filters (CL-3), category chips (CL-4) and sort (CL-6). */
 export function ClosetToolbar({

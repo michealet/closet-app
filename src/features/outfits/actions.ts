@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionState } from "@/lib/action-state";
 import { isOutfitImagePath } from "@/lib/images/paths";
 import { createClient } from "@/lib/supabase/server";
+import { favoriteSchema } from "@/features/clothing/schema";
 import { outfitSchema } from "./schema";
 
 const FAILED = "Couldn't save your outfit. Try again.";
@@ -62,4 +63,28 @@ export async function saveOutfit(input: unknown): Promise<ActionState> {
 
   revalidatePath("/outfits");
   return { status: "success", message: "Outfit saved." };
+}
+
+/** Heart toggle on outfit cards and Outfit Detail (OU-1, FV-1, FV-2). */
+export async function setOutfitFavorite(input: unknown): Promise<ActionState> {
+  const parsed = favoriteSchema.safeParse(input);
+  if (!parsed.success)
+    return { status: "error", message: "Couldn't update your favorite." };
+
+  const supabase = await createClient();
+  const { data: rows, error } = await supabase
+    .from("outfits")
+    .update({ is_favorite: parsed.data.isFavorite })
+    .eq("id", parsed.data.id)
+    .select("id");
+  if (error || !rows?.length)
+    return { status: "error", message: "Couldn't update your favorite." };
+
+  revalidatePath("/outfits");
+  return {
+    status: "success",
+    message: parsed.data.isFavorite
+      ? "Added to favorites."
+      : "Removed from favorites.",
+  };
 }
