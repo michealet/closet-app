@@ -27,6 +27,7 @@ export type Database = {
                   Row: {
                     "brand": string | null,"category": Database["public"]['Enums']["clothing_category"],"color": Database["public"]['Enums']["clothing_color"] | null,"colors": (Database["public"]['Enums']["clothing_color"])[],"created_at": string,"id": string,"image_path": string,"image_processed_path": string | null,"is_favorite": boolean,"name": string,"notes": string | null,"seasons": (Database["public"]['Enums']["season"])[],"tags": (string)[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "brand"?: string | null,"category": Database["public"]['Enums']["clothing_category"],"color"?: Database["public"]['Enums']["clothing_color"] | null,"colors"?: (Database["public"]['Enums']["clothing_color"])[],"created_at"?: string,"id"?: string,"image_path": string,"image_processed_path"?: string | null,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"seasons"?: (Database["public"]['Enums']["season"])[],"tags"?: (string)[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
@@ -40,6 +41,7 @@ export type Database = {
                   Row: {
                     "clothing_item_id": string,"outfit_id": string,"width": number,"x": number,"y": number,"z_index": number
                   }
+                  ComputedFields: never
                   Insert: {
                     "clothing_item_id": string,"outfit_id": string,"width": number,"x": number,"y": number,"z_index"?: number
                   }
@@ -65,6 +67,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"id": string,"is_favorite": boolean,"name": string,"notes": string | null,"occasion": Database["public"]['Enums']["occasion"] | null,"seasons": (Database["public"]['Enums']["season"])[],"thumbnail_path": string | null,"updated_at": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"id"?: string,"is_favorite"?: boolean,"name": string,"notes"?: string | null,"occasion"?: Database["public"]['Enums']["occasion"] | null,"seasons"?: (Database["public"]['Enums']["season"])[],"thumbnail_path"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
@@ -78,6 +81,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"date": string,"event_name": string | null,"id": string,"outfit_id": string,"user_id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"date": string,"event_name"?: string | null,"id"?: string,"outfit_id": string,"user_id"?: string
                   }
@@ -97,6 +101,7 @@ isOneToOne: false
                   Row: {
                     "created_at": string,"display_name": string | null,"id": string
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"display_name"?: string | null,"id": string
                   }
