@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NAME_MAX, NOTES_MAX } from "@/lib/constants";
+import { EVENT_NAME_MAX, NAME_MAX, NOTES_MAX } from "@/lib/constants";
 import { Constants } from "@/types/database";
 
 /** Most pieces one outfit can hold; far more than fits on the canvas. */
@@ -54,4 +54,16 @@ export const outfitSchema = outfitDetailsSchema.extend({
       (items) => new Set(items.map((item) => item.id)).size === items.length,
       "Each piece can be on the outfit once.",
     ),
+});
+
+/** Assign to date (CA-3, CA-4): a real calendar date and an optional event name. */
+export const planSchema = z.object({
+  outfitId: z.uuid(),
+  date: z.iso.date({ error: "Choose a date." }),
+  eventName: z
+    .string()
+    .trim()
+    .max(EVENT_NAME_MAX, `Use at most ${EVENT_NAME_MAX} characters.`)
+    .nullish()
+    .transform((value) => value || null),
 });

@@ -7,6 +7,8 @@ import { ImageTile } from "@/components/shared/image-tile";
 import { PageHeader } from "@/components/shared/page-header";
 import { seasonsLabel } from "@/features/clothing/labels";
 import { setOutfitFavorite } from "@/features/outfits/actions";
+import { DeleteOutfitButton } from "@/features/outfits/delete-outfit-button";
+import { PlanOutfitForm } from "@/features/outfits/plan-outfit-form";
 import { OutfitView } from "@/features/outfits/outfit-view";
 import { OCCASION_LABELS } from "@/lib/constants";
 import { signedImageUrls } from "@/lib/images/storage";
@@ -14,7 +16,17 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Outfit" };
 
-/** Outfit Detail (FRD OU-3): large view, details and its pieces. */
+/** A plan's date (YYYY-MM-DD, no time zone) as "Sat, Oct 24, 2026". */
+const planDate = (date: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${date}T00:00:00Z`));
+
+/** Outfit Detail (FRD OU-3, OU-4): large view, details, pieces and actions. */
 export default async function OutfitDetailPage(
   props: PageProps<"/outfits/[id]">,
 ) {
@@ -25,7 +37,7 @@ export default async function OutfitDetailPage(
   const { data: outfit } = await supabase
     .from("outfits")
     .select(
-      "id, name, occasion, seasons, notes, is_favorite, outfit_items(x, y, width, z_index, item:clothing_items(id, name, image_path, thumbnail_path))",
+      "id, name, occasion, seasons, notes, is_favorite, outfit_items(x, y, width, z_index, item:clothing_items(id, name, image_path, thumbnail_path)), planned_outfits(id, date, event_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -40,6 +52,9 @@ export default async function OutfitDetailPage(
       piece.image_path,
       piece.thumbnail_path ?? piece.image_path,
     ]),
+  );
+  const plans = [...outfit.planned_outfits].sort((a, b) =>
+    a.date.localeCompare(b.date),
   );
   const seasons = seasonsLabel(outfit.seasons);
   const details: [string, string | null][] = [
@@ -109,6 +124,38 @@ export default async function OutfitDetailPage(
             </p>
           )}
         </section>
+
+        <section className="mt-10 space-y-3">
+          <h2 className="text-xl">Planned for</h2>
+          {plans.length ? (
+            <ul className="space-y-1">
+              {plans.map((plan) => (
+                <li key={plan.id}>
+                  {planDate(plan.date)}
+                  {plan.event_name && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      · {plan.event_name}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Not planned for any date yet.
+            </p>
+          )}
+          <PlanOutfitForm outfitId={outfit.id} />
+        </section>
+
+        <div className="mt-10">
+          <DeleteOutfitButton
+            outfitId={outfit.id}
+            name={outfit.name}
+            planCount={plans.length}
+          />
+        </div>
       </div>
     </div>
   );
