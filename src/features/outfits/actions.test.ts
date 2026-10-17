@@ -1,5 +1,10 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { saveOutfit, setOutfitFavorite } from "./actions";
+import {
+  deleteOutfit,
+  planOutfit,
+  saveOutfit,
+  setOutfitFavorite,
+} from "./actions";
 
 const {
   from,
@@ -11,7 +16,13 @@ const {
   eq,
   getClaims,
   revalidatePath,
+  deleted,
+  insertPlan,
+  removeFiles,
 } = vi.hoisted(() => ({
+  deleted: vi.fn(),
+  insertPlan: vi.fn(),
+  removeFiles: vi.fn(),
   update: vi.fn(),
   select: vi.fn(),
   from: vi.fn(),
@@ -23,6 +34,7 @@ const {
   revalidatePath: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("@/lib/images/storage", () => ({ removeClosetFiles: removeFiles }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { getClaims }, from }),
 }));
@@ -49,12 +61,24 @@ beforeEach(() => {
   from.mockImplementation((table: string) =>
     table === "outfits"
       ? { insert: insertOutfit, delete: del, update }
-      : { insert: insertItems },
+      : table === "planned_outfits"
+        ? { insert: insertPlan }
+        : { insert: insertItems },
   );
   insertOutfit.mockResolvedValue({ error: null });
   insertItems.mockResolvedValue({ error: null });
   del.mockReturnValue({ eq });
-  eq.mockResolvedValue({ error: null });
+  // Awaited directly (saveOutfit's clean-up) or followed by .select (delete).
+  eq.mockReturnValue({
+    select: deleted,
+    then: (done: (value: unknown) => void) => done({ error: null }),
+  });
+  deleted.mockResolvedValue({
+    data: [{ thumbnail_path: input.thumbnailPath }],
+    error: null,
+  });
+  insertPlan.mockResolvedValue({ error: null });
+  removeFiles.mockResolvedValue(true);
   update.mockReturnValue({ eq: () => ({ select }) });
   select.mockResolvedValue({ data: [{ id: outfitId }], error: null });
 });
@@ -148,3 +172,50 @@ it("hearts an outfit, and says when it can't", async () => {
     status: "error",
   });
 });
+
+it("deletes an outfit and its picture", async () => {
+  expect(await deleteOutfit(outfitId)).toEqual({
+    status: "success",
+    message: "Outfit deleted.",
+  });
+  expect(eq).toHaveBeenCalledWith("id", outfitId);
+  expect(removeFiles).toHaveBeenCalledWith(expect.anything(), [
+    input.thumbnailPath,
+  ]);
+  expect(revalidatePath).toHaveBeenCalledWith("/outfits");
+});
+
+it("says when an outfit to delete is gone or its picture stays", async () => {
+  removeFiles.mockResolvedValue(false);
+  expect(await deleteOutfit(outfitId)).toMatchObject({
+    message: "Outfit deleted, but its picture couldn't be removed.",
+  });
+  deleted.mockResolvedValue({ data: [], error: null });
+  expect(await deleteOutfit(outfitId)).toEqual({
+    status: "error",
+    message: "This outfit no longer exists.",
+  });
+  expect(await deleteOutfit("nope")).toMatchObject({ status: "error" });
+});
+
+it("plans an outfit for a date, with an optional event", async () => {
+  expect(
+    await planOutfit({ outfitId, date: "2026-10-24", eventName: "  " }),
+  ).toEqual({ status: "success", message: "Outfit planned." });
+  expect(insertPlan).toHaveBeenCalledWith({
+    outfit_id: outfitId,
+    date: "2026-10-24",
+    event_name: null,
+  });
+  expect(revalidatePath).toHaveBeenCalledWith(`/outfits/${outfitId}`);
+});
+
+it.each(["", "24/10/2026", "2026-13-01", "2026-02-30"])(
+  "refuses the date %j",
+  async (date) => {
+    expect(await planOutfit({ outfitId, date })).toMatchObject({
+      status: "error",
+    });
+    expect(insertPlan).not.toHaveBeenCalled();
+  },
+);
