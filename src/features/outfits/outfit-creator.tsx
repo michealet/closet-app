@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { LeaveGuard } from "./leave-guard";
 import { moveLayer, placeItem, scaleItem, type CanvasItem } from "./layout";
 import { PieceTools } from "./piece-tools";
-import { SaveOutfitForm } from "./save-outfit-form";
+import { SaveOutfitForm, type EditableOutfit } from "./save-outfit-form";
 
 /** Konva only loads on this page, in the browser (ADR 0003). */
 const OutfitCanvas = dynamic(() => import("./outfit-canvas"), {
@@ -34,23 +34,35 @@ function aspectOf(photo: HTMLImageElement | null) {
   return photo?.naturalWidth ? photo.naturalHeight / photo.naturalWidth : 1;
 }
 
+/** Same pieces in the same places, sizes and layers. */
+function sameLayout(a: CanvasItem[], b: CanvasItem[]) {
+  const key = (items: CanvasItem[]) =>
+    JSON.stringify([...items].sort((x, y) => x.id.localeCompare(y.id)));
+  return key(a) === key(b);
+}
+
 /**
  * Canvas plus closet picker (OC-1–OC-3), arranging (OC-6), then Save (OC-9);
- * positions stay 0–1 (OC-7). `startWith` is a piece to begin with (OC-13).
+ * positions stay 0–1 (OC-7). `startWith` is a piece to begin with (OC-13);
+ * `outfit` is a saved outfit to edit (OC-11).
  */
 export function OutfitCreator({
   closet,
   startWith,
+  outfit,
 }: {
   closet: PickerItem[];
   startWith?: string;
+  outfit?: EditableOutfit;
 }) {
   const start = closet.find((item) => item.id === startWith);
   // Without a photo there's no shape to wait for: place it straight away.
   const [items, setItems] = useState<CanvasItem[]>(() =>
-    start && !start.photoUrl
-      ? [placeItem(start.id, start.category, 1, [], () => undefined)]
-      : [],
+    outfit
+      ? outfit.items
+      : start && !start.photoUrl
+        ? [placeItem(start.id, start.category, 1, [], () => undefined)]
+        : [],
   );
   const [selectedId, setSelectedId] = useState<string | null>(
     start && !start.photoUrl ? start.id : null,
@@ -116,7 +128,12 @@ export function OutfitCreator({
   return (
     <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-start">
       {/* Leaving after a successful save uses router.push, which isn't guarded. */}
-      <LeaveGuard active={items.length > 0} />
+      <LeaveGuard
+        active={
+          saving ||
+          (outfit ? !sameLayout(items, outfit.items) : items.length > 0)
+        }
+      />
       <div className="mx-auto w-full max-w-[calc((100dvh-24rem)*0.75)] min-w-64 md:sticky md:top-6 md:max-w-[calc((100dvh-10rem)*0.75)]">
         <OutfitCanvas
           items={items}
@@ -169,7 +186,7 @@ export function OutfitCreator({
               setSaving(true);
             }}
           >
-            Save outfit
+            {outfit ? "Save changes" : "Save outfit"}
           </Button>
         )}
       </div>
@@ -179,6 +196,7 @@ export function OutfitCreator({
           items={items}
           snapshotRef={snapshotRef}
           onCancel={() => setSaving(false)}
+          outfit={outfit}
         />
       ) : (
         <section aria-label="Your closet" className="space-y-3">

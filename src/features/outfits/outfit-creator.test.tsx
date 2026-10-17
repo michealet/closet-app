@@ -22,7 +22,7 @@ const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, refresh: vi.fn() }),
 }));
-vi.mock("./actions", () => ({ saveOutfit: vi.fn() }));
+vi.mock("./actions", () => ({ saveOutfit: vi.fn(), updateOutfit: vi.fn() }));
 vi.mock("@/lib/images/upload", () => ({ uploadOutfitThumbnail: vi.fn() }));
 vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
 
@@ -154,4 +154,39 @@ it("asks before leaving with an unsaved outfit (OC-12)", () => {
   fireEvent.click(link);
   fireEvent.click(screen.getByRole("button", { name: "Leave" }));
   expect(push).toHaveBeenCalledWith("/closet");
+});
+
+it("opens a saved outfit pre-filled and only warns once it's changed (OC-11)", () => {
+  render(
+    <>
+      <Link href="/outfits">Outfits</Link>
+      <OutfitCreator
+        closet={closet}
+        outfit={{
+          id: "o1",
+          name: "Friday dinner",
+          occasion: "dinner",
+          seasons: ["fall"],
+          notes: "Warm",
+          isFavorite: true,
+          thumbnailPath: null,
+          items: [{ id: "jeans", x: 0.5, y: 0.6, width: 0.3, z: 0 }],
+        }}
+      />
+    </>,
+  );
+  expect(placed()).toEqual(["jeans"]);
+  const link = screen.getByRole("link", { name: "Outfits" });
+  expect(fireEvent.click(link)).toBe(true);
+
+  fireEvent.click(piece("Blue shirt"));
+  expect(fireEvent.click(link)).toBe(false);
+  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+
+  fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+  expect(screen.getByLabelText("Name")).toHaveValue("Friday dinner");
+  expect(screen.getByLabelText("Occasion (optional)")).toHaveValue("dinner");
+  expect(screen.getByLabelText("Fall")).toBeChecked();
+  expect(screen.getByLabelText("Notes (optional)")).toHaveValue("Warm");
+  expect(screen.getByLabelText("Add to favorites")).toBeChecked();
 });
