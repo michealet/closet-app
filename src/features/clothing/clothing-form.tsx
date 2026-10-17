@@ -29,6 +29,7 @@ import {
   ClothingOptionalFields,
   type OptionalDefaults,
 } from "./optional-fields";
+import { PhotoDropArea } from "./photo-drop-area";
 
 /** An existing item to edit (AC-10). */
 export type EditableItem = OptionalDefaults & {
@@ -187,16 +188,10 @@ export function ClothingForm({
               className="size-40 rounded-lg bg-tile object-contain"
             />
           )}
-          <Label htmlFor="photo">
-            {item ? "Replace photo (optional)" : "Photo"}
-          </Label>
-          <Input
-            id="photo"
-            ref={photoRef}
-            name="photo"
-            type="file"
-            accept="image/*,.heic,.heif"
+          <PhotoDropArea
+            label={item ? "Replace photo (optional)" : "Photo"}
             required={!item}
+            inputRef={photoRef}
           />
         </div>
         <div className="space-y-2">
