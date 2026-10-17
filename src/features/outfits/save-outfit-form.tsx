@@ -14,26 +14,49 @@ import { SeasonFields } from "@/components/shared/season-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NAME_MAX, NOTES_MAX, OCCASION_OPTIONS } from "@/lib/constants";
+import {
+  NAME_MAX,
+  NOTES_MAX,
+  OCCASION_OPTIONS,
+  type Occasion,
+  type Season,
+} from "@/lib/constants";
 import { removeClosetFiles } from "@/lib/images/storage";
 import { uploadOutfitThumbnail } from "@/lib/images/upload";
 import { createClient } from "@/lib/supabase/client";
-import { saveOutfit } from "./actions";
+import { saveOutfit, updateOutfit } from "./actions";
 import type { CanvasItem } from "./layout";
 import { outfitDetailsSchema } from "./schema";
 
 const SELECT =
   "h-11 w-full rounded-lg border border-input bg-background px-3 text-base focus-visible:outline-ring";
 
-/** Save form (OC-9): saves the details, the canvas and its thumbnail (OC-10). */
+/** A saved outfit opened for editing (OC-11). */
+export type EditableOutfit = {
+  id: string;
+  name: string;
+  occasion: Occasion | null;
+  seasons: Season[];
+  notes: string | null;
+  isFavorite: boolean;
+  thumbnailPath: string | null;
+  items: CanvasItem[];
+};
+
+/**
+ * Save form (OC-9): saves the details, the canvas and its thumbnail (OC-10).
+ * With `outfit`, it's pre-filled and saves over that outfit (OC-11).
+ */
 export function SaveOutfitForm({
   items,
   snapshotRef,
   onCancel,
+  outfit,
 }: {
   items: CanvasItem[];
   snapshotRef: RefObject<(() => HTMLCanvasElement | null) | null>;
   onCancel: () => void;
+  outfit?: EditableOutfit;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -64,7 +87,9 @@ export function SaveOutfitForm({
 
     setError("");
     startTransition(async () => {
-      const outfitId = crypto.randomUUID();
+      const outfitId = outfit?.id ?? crypto.randomUUID();
+      // An edit's picture overwrites the old one when the format matches.
+      const oldPicture = outfit?.thumbnailPath ?? null;
       // The outfit still saves without its picture (ADR 0003).
       let thumbnailPath: string | null = null;
       try {
@@ -75,24 +100,27 @@ export function SaveOutfitForm({
         thumbnailPath = null;
       }
       try {
-        const result = await saveOutfit({
+        const result = await (outfit ? updateOutfit : saveOutfit)({
           outfitId,
           ...details.data,
           thumbnailPath,
           items,
         });
         if (result.status === "error") {
-          await removeClosetFiles(createClient(), [thumbnailPath]);
+          if (thumbnailPath !== oldPicture)
+            await removeClosetFiles(createClient(), [thumbnailPath]);
           fail(result.message);
           return;
         }
         if (result.status !== "success") return;
+        if (oldPicture && oldPicture !== thumbnailPath)
+          await removeClosetFiles(createClient(), [oldPicture]);
         if (thumbnailPath) toast.success(result.message);
         else
           toast.warning(
             `${result.message} Its picture couldn't be made, so its card shows no preview.`,
           );
-        router.push("/outfits");
+        router.push(outfit ? `/outfits/${outfit.id}` : "/outfits");
         router.refresh();
       } catch {
         // A lost response may follow a committed save; keep its picture.
@@ -112,6 +140,7 @@ export function SaveOutfitForm({
             name="name"
             required
             maxLength={NAME_MAX}
+            defaultValue={outfit?.name}
             placeholder="e.g. Friday dinner"
             enterKeyHint="done"
           />
@@ -121,7 +150,7 @@ export function SaveOutfitForm({
           <select
             id="occasion"
             name="occasion"
-            defaultValue=""
+            defaultValue={outfit?.occasion ?? ""}
             className={SELECT}
           >
             <option value="">No occasion</option>
@@ -132,7 +161,7 @@ export function SaveOutfitForm({
             ))}
           </select>
         </div>
-        <SeasonFields />
+        <SeasonFields defaults={outfit?.seasons} />
         <div className="space-y-2">
           <Label htmlFor="outfit-notes">Notes (optional)</Label>
           <textarea
@@ -140,16 +169,22 @@ export function SaveOutfitForm({
             name="notes"
             maxLength={NOTES_MAX}
             rows={3}
+            defaultValue={outfit?.notes ?? ""}
             className="w-full rounded-lg border border-input bg-background p-3 text-base focus-visible:outline-ring"
           />
         </div>
         <Label className="min-h-11 gap-2">
-          <input type="checkbox" name="favorite" className="size-4" />
+          <input
+            type="checkbox"
+            name="favorite"
+            defaultChecked={outfit?.isFavorite}
+            className="size-4"
+          />
           Add to favorites
         </Label>
         <div className="grid gap-3">
           <Button type="submit" size="lg">
-            {pending ? "Saving…" : "Save outfit"}
+            {pending ? "Saving…" : outfit ? "Save changes" : "Save outfit"}
           </Button>
           <Button
             type="button"

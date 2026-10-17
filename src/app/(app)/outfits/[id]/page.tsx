@@ -1,3 +1,4 @@
+import { PencilIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,9 +6,11 @@ import { z } from "zod";
 import { HeartButton } from "@/components/shared/heart-button";
 import { ImageTile } from "@/components/shared/image-tile";
 import { PageHeader } from "@/components/shared/page-header";
+import { buttonVariants } from "@/components/ui/button";
 import { seasonsLabel } from "@/features/clothing/labels";
 import { setOutfitFavorite } from "@/features/outfits/actions";
 import { DeleteOutfitButton } from "@/features/outfits/delete-outfit-button";
+import { DuplicateOutfitButton } from "@/features/outfits/duplicate-outfit-button";
 import { PlanOutfitForm } from "@/features/outfits/plan-outfit-form";
 import { OutfitView } from "@/features/outfits/outfit-view";
 import { OCCASION_LABELS } from "@/lib/constants";
@@ -87,7 +90,18 @@ export default async function OutfitDetailPage(
         />
       </div>
       <div>
-        <PageHeader title={outfit.name} />
+        <PageHeader
+          title={outfit.name}
+          actions={
+            <Link
+              href={`/outfits/${outfit.id}/edit`}
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
+            >
+              <PencilIcon aria-hidden />
+              Edit
+            </Link>
+          }
+        />
         <dl className="space-y-4">
           {details.map(([term, value]) =>
             value ? (
@@ -149,7 +163,8 @@ export default async function OutfitDetailPage(
           <PlanOutfitForm outfitId={outfit.id} />
         </section>
 
-        <div className="mt-10">
+        <div className="mt-10 space-y-3">
+          <DuplicateOutfitButton outfitId={outfit.id} />
           <DeleteOutfitButton
             outfitId={outfit.id}
             name={outfit.name}
