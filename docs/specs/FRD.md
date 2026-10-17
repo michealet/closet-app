@@ -300,7 +300,7 @@ Maya's suggested entities are mapped to Postgres/Supabase below. The main change
 | 3   | Categories, filters, search                                               | CL-2–4, CL-6     | ✅ done     |
 | 4   | Outfit creator (canvas, drag, resize)                                     | OC-1–8, OC-11–13 | part 1 of 2 |
 | 5   | Save outfits + thumbnails                                                 | OC-9, OC-10      | ✅ done     |
-| 6   | Saved outfits page + actions                                              | OU-*             | to do       |
+| 6   | Saved outfits page + actions                                              | OU-*             | part 1 of 2 |
 | 7   | Favorites (items + outfits)                                               | FV-*             | to do       |
 | 8   | Outfit calendar                                                           | CA-*             | to do       |
 | 9   | Home screen (uses all of the above)                                       | HM-*             | to do       |

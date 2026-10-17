@@ -1,16 +1,27 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { saveOutfit } from "./actions";
+import { saveOutfit, setOutfitFavorite } from "./actions";
 
-const { from, insertOutfit, insertItems, del, eq, getClaims, revalidatePath } =
-  vi.hoisted(() => ({
-    from: vi.fn(),
-    insertOutfit: vi.fn(),
-    insertItems: vi.fn(),
-    del: vi.fn(),
-    eq: vi.fn(),
-    getClaims: vi.fn(),
-    revalidatePath: vi.fn(),
-  }));
+const {
+  from,
+  insertOutfit,
+  insertItems,
+  update,
+  select,
+  del,
+  eq,
+  getClaims,
+  revalidatePath,
+} = vi.hoisted(() => ({
+  update: vi.fn(),
+  select: vi.fn(),
+  from: vi.fn(),
+  insertOutfit: vi.fn(),
+  insertItems: vi.fn(),
+  del: vi.fn(),
+  eq: vi.fn(),
+  getClaims: vi.fn(),
+  revalidatePath: vi.fn(),
+}));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { getClaims }, from }),
@@ -37,13 +48,15 @@ beforeEach(() => {
   getClaims.mockResolvedValue({ data: { claims: { sub: userId } } });
   from.mockImplementation((table: string) =>
     table === "outfits"
-      ? { insert: insertOutfit, delete: del }
+      ? { insert: insertOutfit, delete: del, update }
       : { insert: insertItems },
   );
   insertOutfit.mockResolvedValue({ error: null });
   insertItems.mockResolvedValue({ error: null });
   del.mockReturnValue({ eq });
   eq.mockResolvedValue({ error: null });
+  update.mockReturnValue({ eq: () => ({ select }) });
+  select.mockResolvedValue({ data: [{ id: outfitId }], error: null });
 });
 
 it("saves the outfit, its thumbnail and where each piece sits", async () => {
@@ -117,4 +130,21 @@ it("removes the outfit again when its pieces can't be saved", async () => {
   });
   expect(eq).toHaveBeenCalledWith("id", outfitId);
   expect(revalidatePath).not.toHaveBeenCalled();
+});
+
+it("hearts an outfit, and says when it can't", async () => {
+  expect(await setOutfitFavorite({ id: outfitId, isFavorite: true })).toEqual({
+    status: "success",
+    message: "Added to favorites.",
+  });
+  expect(update).toHaveBeenCalledWith({ is_favorite: true });
+  expect(revalidatePath).toHaveBeenCalledWith("/outfits");
+
+  select.mockResolvedValue({ data: [], error: null });
+  expect(
+    await setOutfitFavorite({ id: outfitId, isFavorite: false }),
+  ).toMatchObject({ status: "error" });
+  expect(await setOutfitFavorite({ id: "nope" })).toMatchObject({
+    status: "error",
+  });
 });

@@ -6,7 +6,7 @@ import { CheckIcon, SearchIcon } from "lucide-react";
 import { ImageTile } from "@/components/shared/image-tile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CHIP } from "@/features/clothing/closet-toolbar";
+import { CHIP } from "@/components/shared/chip";
 import { CATEGORY_OPTIONS, type ClothingCategory } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { placeItem, type CanvasItem } from "./layout";
