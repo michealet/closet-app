@@ -11,7 +11,7 @@ import {
   Transformer,
 } from "react-konva/lib/ReactKonvaCore";
 import { THUMB_MAX_EDGE } from "@/lib/images/prepare";
-import { CANVAS_RATIO, fitItem, type CanvasItem } from "./layout";
+import { CANVAS_RATIO, fitItem, scaleItem, type CanvasItem } from "./layout";
 
 /** Loads a photo the canvas can export later (ADR 0003: CORS, no tainting). */
 function usePhoto(url: string | null) {
@@ -163,6 +163,42 @@ export default function OutfitCanvas({
     };
   }, [snapshotRef, width, theme.tile]);
 
+  // Two-finger pinch resizes the selected piece (OC-5); one finger still drags.
+  // A non-passive native listener, so the page doesn't scroll or zoom meanwhile.
+  const latest = useRef({ items, selectedId, onChange });
+  useEffect(() => {
+    latest.current = { items, selectedId, onChange };
+  });
+  useEffect(() => {
+    const element = box.current;
+    if (!element) return;
+    let last: number | null = null;
+    const move = (event: TouchEvent) => {
+      const { items, selectedId, onChange } = latest.current;
+      const selected = items.find((item) => item.id === selectedId);
+      if (event.touches.length !== 2 || !selected) return;
+      event.preventDefault();
+      stage.current?.find("Image").forEach((node) => {
+        if (node.isDragging()) node.stopDrag();
+      });
+      const [a, b] = [event.touches[0], event.touches[1]];
+      const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      if (last) onChange(scaleItem(selected, distance / last));
+      last = distance;
+    };
+    const end = () => {
+      last = null;
+    };
+    element.addEventListener("touchmove", move, { passive: false });
+    element.addEventListener("touchend", end);
+    element.addEventListener("touchcancel", end);
+    return () => {
+      element.removeEventListener("touchmove", move);
+      element.removeEventListener("touchend", end);
+      element.removeEventListener("touchcancel", end);
+    };
+  }, []);
+
   // Selected pieces attach the handles themselves (CanvasPhoto).
   useEffect(() => {
     if (!selectedId) transformer.current?.nodes([]);
@@ -186,6 +222,8 @@ export default function OutfitCanvas({
           width={size.width}
           height={size.height}
           onPointerDown={(event) => {
+            // A second finger (a pinch) shouldn't drop the selection.
+            if (!event.evt.isPrimary) return;
             if (event.target === event.target.getStage()) onSelect(null);
           }}
         >

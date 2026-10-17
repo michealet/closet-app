@@ -152,6 +152,14 @@ export default async function ItemDetailPage(props: PageProps<"/closet/[id]">) {
               description="Outfits you create with this piece will show up here."
             />
           )}
+          {/* OC-13: start the creator with this piece already on the canvas. */}
+          <Link
+            href={`/outfits/new?item=${item.id}`}
+            className={buttonVariants({ size: "lg", className: "mt-4 w-full" })}
+          >
+            <SparklesIcon aria-hidden />
+            Create an outfit with this
+          </Link>
         </section>
 
         <div className="mt-10">

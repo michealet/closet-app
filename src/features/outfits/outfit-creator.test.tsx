@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import Link from "next/link";
 import { expect, it, vi } from "vitest";
 import type { CanvasItem } from "./layout";
 import { OutfitCreator, type PickerItem } from "./outfit-creator";
@@ -17,8 +18,9 @@ vi.mock("next/dynamic", () => ({
     },
 }));
 
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, refresh: vi.fn() }),
 }));
 vi.mock("./actions", () => ({ saveOutfit: vi.fn() }));
 vi.mock("@/lib/images/upload", () => ({ uploadOutfitThumbnail: vi.fn() }));
@@ -94,4 +96,62 @@ it("opens the Save form once something is on the canvas, and goes back", () => {
   fireEvent.click(screen.getByRole("button", { name: "Back to closet" }));
   expect(screen.getByLabelText("Search your closet")).toBeInTheDocument();
   expect(placed()).toEqual(["shirt"]);
+});
+
+const layers = () =>
+  Object.fromEntries(
+    within(screen.getByRole("list", { name: "On the canvas" }))
+      .getAllByRole("listitem")
+      .map((item) => item.textContent!.split(" "))
+      .map(([id, , , z]) => [id, Number(z)]),
+  );
+const tool = (name: string) =>
+  within(screen.getByRole("toolbar", { name: "Arrange piece" })).getByRole(
+    "button",
+    { name },
+  );
+
+it("arranges the chosen piece with buttons (OC-6)", () => {
+  render(<OutfitCreator closet={closet} />);
+  fireEvent.click(piece("Blue shirt"));
+  fireEvent.click(piece("Black jeans"));
+  const choose = screen.getByLabelText("Piece to arrange");
+  expect(choose).toHaveValue("jeans");
+  expect(tool("Bring forward")).toBeDisabled();
+
+  fireEvent.click(tool("Send backward"));
+  expect(layers()).toEqual({ shirt: 1, jeans: 0 });
+
+  fireEvent.change(choose, { target: { value: "shirt" } });
+  fireEvent.click(tool("Remove from outfit"));
+  expect(placed()).toEqual(["jeans"]);
+  expect(choose).toHaveValue("");
+  expect(tool("Bigger")).toBeDisabled();
+});
+
+it("starts with the piece from Item Detail on the canvas (OC-13)", () => {
+  render(<OutfitCreator closet={closet} startWith="boots" />);
+  expect(placed()).toEqual(["boots"]);
+  expect(piece("Black boots")).toHaveAttribute("aria-pressed", "true");
+});
+
+it("asks before leaving with an unsaved outfit (OC-12)", () => {
+  render(
+    <>
+      <Link href="/closet">Closet</Link>
+      <OutfitCreator closet={closet} />
+    </>,
+  );
+  const link = screen.getByRole("link", { name: "Closet" });
+  expect(fireEvent.click(link)).toBe(true);
+
+  fireEvent.click(piece("Blue shirt"));
+  expect(fireEvent.click(link)).toBe(false);
+  expect(screen.getByText("Leave without saving?")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Keep editing" }));
+  expect(push).not.toHaveBeenCalled();
+
+  fireEvent.click(link);
+  fireEvent.click(screen.getByRole("button", { name: "Leave" }));
+  expect(push).toHaveBeenCalledWith("/closet");
 });
