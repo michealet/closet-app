@@ -1,17 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  ALL_SEASONS,
   BRAND_MAX,
   COLOR_OPTIONS,
   NOTES_MAX,
-  SEASON_OPTIONS,
   type ClothingColor,
   type Season,
 } from "@/lib/constants";
+import { SeasonFields } from "@/components/shared/season-fields";
 import { TagInput } from "./tag-input";
 
 export type OptionalDefaults = {
@@ -31,7 +29,6 @@ export function ClothingOptionalFields({
   tags?: string[];
   defaults?: OptionalDefaults;
 }) {
-  const [seasons, setSeasons] = useState<Season[]>(defaults?.seasons ?? []);
   return (
     <>
       <div className="space-y-2">
@@ -78,44 +75,7 @@ export function ClothingOptionalFields({
           ))}
         </div>
       </fieldset>
-      <fieldset className="space-y-2">
-        <legend className="mb-2 text-sm font-medium">Seasons (optional)</legend>
-        <Label className="min-h-11 gap-2">
-          <input
-            type="checkbox"
-            className="size-4"
-            checked={seasons.length === ALL_SEASONS.length}
-            onChange={(event) =>
-              setSeasons(event.target.checked ? [...ALL_SEASONS] : [])
-            }
-          />
-          All Season
-        </Label>
-        <div className="grid grid-cols-2 gap-2">
-          {SEASON_OPTIONS.map(({ value, label }) => (
-            <Label
-              key={value}
-              className="min-h-11 rounded-lg border border-input px-3"
-            >
-              <input
-                type="checkbox"
-                name="seasons"
-                value={value}
-                className="size-4"
-                checked={seasons.includes(value)}
-                onChange={(event) =>
-                  setSeasons((selected) =>
-                    event.target.checked
-                      ? [...selected, value]
-                      : selected.filter((season) => season !== value),
-                  )
-                }
-              />
-              {label}
-            </Label>
-          ))}
-        </div>
-      </fieldset>
+      <SeasonFields defaults={defaults?.seasons} />
       <TagInput defaultTags={defaults?.tags} suggestions={tags} />
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (optional)</Label>

@@ -8,8 +8,15 @@
  */
 
 import { createClient } from "@/lib/supabase/client";
-import { CLOSET_BUCKET, itemImagePaths } from "./paths";
-import { ImageError, prepareImage, type PreparedImage } from "./prepare";
+import { CLOSET_BUCKET, itemImagePaths, outfitThumbnailPath } from "./paths";
+import {
+  canEncodeWebp,
+  ImageError,
+  JPEG_QUALITY,
+  prepareImage,
+  WEBP_QUALITY,
+  type PreparedImage,
+} from "./prepare";
 
 export type UploadedItemPhoto = {
   itemId: string;
@@ -64,6 +71,34 @@ export async function uploadItemPhoto(
   }
 
   return { itemId: id, ...paths };
+}
+
+/**
+ * Encodes a drawn outfit canvas (OC-10) as WebP, or JPEG where the browser
+ * can't (Safari), and uploads it as the outfit's thumbnail. Returns its path.
+ */
+export async function uploadOutfitThumbnail(
+  canvas: HTMLCanvasElement,
+  outfitId: string,
+): Promise<string> {
+  const webp = await canEncodeWebp();
+  const contentType = webp ? "image/webp" : "image/jpeg";
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, contentType, webp ? WEBP_QUALITY : JPEG_QUALITY),
+  );
+  if (!blob) throw new ImageError("Couldn't make a picture of your outfit.");
+
+  const supabase = createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims.sub;
+  if (!userId) throw new ImageError("Your session has expired. Sign in again.");
+
+  const path = outfitThumbnailPath(userId, outfitId, webp ? "webp" : "jpg");
+  const { error } = await supabase.storage
+    .from(CLOSET_BUCKET)
+    .upload(path, blob, { contentType, cacheControl: "3600", upsert: true });
+  if (error) throw new ImageError(UPLOAD_FAILED, { cause: error });
+  return path;
 }
 
 export type { PreparedImage };

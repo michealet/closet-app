@@ -10,6 +10,7 @@ import {
   Stage,
   Transformer,
 } from "react-konva/lib/ReactKonvaCore";
+import { THUMB_MAX_EDGE } from "@/lib/images/prepare";
 import { CANVAS_RATIO, fitItem, type CanvasItem } from "./layout";
 
 /** Loads a photo the canvas can export later (ADR 0003: CORS, no tainting). */
@@ -100,14 +101,18 @@ export default function OutfitCanvas({
   selectedId,
   onSelect,
   onChange,
+  snapshotRef,
 }: {
   items: CanvasItem[];
   photos: Map<string, { url: string | null; name: string }>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onChange: (item: CanvasItem) => void;
+  /** Set to a function that draws the outfit for its thumbnail (OC-10). */
+  snapshotRef: RefObject<(() => HTMLCanvasElement | null) | null>;
 }) {
   const box = useRef<HTMLDivElement>(null);
+  const stage = useRef<Konva.Stage>(null);
   const transformer = useRef<Konva.Transformer>(null);
   const [width, setWidth] = useState(0);
   // Konva draws on a canvas, so it takes theme colors as values, not classes.
@@ -116,6 +121,7 @@ export default function OutfitCanvas({
     return {
       brand: css.getPropertyValue("--brand").trim(),
       fill: css.getPropertyValue("--background").trim(),
+      tile: css.getPropertyValue("--tile").trim(),
       touch: window.matchMedia("(pointer: coarse)").matches,
     };
   });
@@ -130,6 +136,32 @@ export default function OutfitCanvas({
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+
+  // The thumbnail: the pieces without handles, on the tile color (JPEG has no
+  // transparency), THUMB_MAX_EDGE tall.
+  useEffect(() => {
+    snapshotRef.current = () => {
+      const handles = transformer.current;
+      if (!stage.current || !handles || !width) return null;
+      handles.visible(false);
+      const drawn = stage.current.toCanvas({
+        pixelRatio: THUMB_MAX_EDGE / (width / CANVAS_RATIO),
+      });
+      handles.visible(true);
+      const picture = document.createElement("canvas");
+      picture.width = drawn.width;
+      picture.height = drawn.height;
+      const context = picture.getContext("2d");
+      if (!context) return null;
+      context.fillStyle = theme.tile;
+      context.fillRect(0, 0, picture.width, picture.height);
+      context.drawImage(drawn, 0, 0);
+      return picture;
+    };
+    return () => {
+      snapshotRef.current = null;
+    };
+  }, [snapshotRef, width, theme.tile]);
 
   // Selected pieces attach the handles themselves (CanvasPhoto).
   useEffect(() => {
@@ -150,6 +182,7 @@ export default function OutfitCanvas({
     >
       {width > 0 && (
         <Stage
+          ref={stage}
           width={size.width}
           height={size.height}
           onPointerDown={(event) => {
