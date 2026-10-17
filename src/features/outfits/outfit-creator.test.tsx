@@ -17,6 +17,13 @@ vi.mock("next/dynamic", () => ({
     },
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}));
+vi.mock("./actions", () => ({ saveOutfit: vi.fn() }));
+vi.mock("@/lib/images/upload", () => ({ uploadOutfitThumbnail: vi.fn() }));
+vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
+
 const closet: PickerItem[] = [
   { id: "shirt", name: "Blue shirt", category: "tops", photoUrl: null },
   { id: "jeans", name: "Black jeans", category: "bottoms", photoUrl: null },
@@ -71,4 +78,20 @@ it("filters the picker by category and name", () => {
     target: { value: "dress" },
   });
   expect(screen.getByText(/Nothing matches/)).toBeInTheDocument();
+});
+
+it("opens the Save form once something is on the canvas, and goes back", () => {
+  render(<OutfitCreator closet={closet} />);
+  const save = screen.getByRole("button", { name: "Save outfit" });
+  expect(save).toBeDisabled();
+
+  fireEvent.click(piece("Blue shirt"));
+  fireEvent.click(save);
+  expect(screen.getByRole("form", { name: "Save outfit" })).toBeInTheDocument();
+  expect(screen.getByLabelText("Name")).toHaveFocus();
+  expect(screen.queryByLabelText("Search your closet")).toBeNull();
+
+  fireEvent.click(screen.getByRole("button", { name: "Back to closet" }));
+  expect(screen.getByLabelText("Search your closet")).toBeInTheDocument();
+  expect(placed()).toEqual(["shirt"]);
 });
