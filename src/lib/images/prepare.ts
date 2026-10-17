@@ -102,19 +102,37 @@ async function decode(file: File): Promise<ImageBitmap> {
     if (!looksLikeHeic(file))
       throw new ImageError(UNREADABLE, { cause: error });
   }
-
-  // Only Safari decodes HEIC natively. Load the ~3 MB converter on demand.
+  const jpeg = await heicToJpeg(file);
   try {
-    const { heicTo } = await import("heic-to/next");
-    const jpeg = await heicTo({
-      blob: file,
-      type: "image/jpeg",
-      quality: 0.92,
-    });
     return await createImageBitmap(jpeg, { imageOrientation: "from-image" });
   } catch (error) {
     throw new ImageError(UNREADABLE, { cause: error });
   }
+}
+
+/** Only Safari decodes HEIC natively. Loads the ~3 MB converter on demand. */
+async function heicToJpeg(file: File): Promise<Blob> {
+  try {
+    const { heicTo } = await import("heic-to/next");
+    return await heicTo({ blob: file, type: "image/jpeg", quality: 0.92 });
+  } catch (error) {
+    throw new ImageError(UNREADABLE, { cause: error });
+  }
+}
+
+/**
+ * An object URL to show `file` as soon as it's chosen, before Save. HEIC is
+ * converted where the browser can't show it. Revoke the URL when done.
+ */
+export async function previewPhoto(file: File): Promise<string> {
+  if (looksLikeHeic(file)) {
+    try {
+      (await createImageBitmap(file)).close();
+    } catch {
+      return URL.createObjectURL(await heicToJpeg(file));
+    }
+  }
+  return URL.createObjectURL(file);
 }
 
 async function render(

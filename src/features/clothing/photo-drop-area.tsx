@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type DragEvent, type Ref } from "react";
-import { CircleCheck, ImagePlus } from "lucide-react";
+import { useEffect, useRef, useState, type DragEvent, type Ref } from "react";
+import Image from "next/image";
+import { CircleCheck, ImagePlus, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
-import { looksLikeHeic } from "@/lib/images/prepare";
+import { ImageError, looksLikeHeic, previewPhoto } from "@/lib/images/prepare";
 import { cn } from "@/lib/utils";
 
 const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -26,7 +27,8 @@ function hasFiles(event: { dataTransfer: DataTransfer | null }) {
 /**
  * The photo field as a drop area (#30). Clicking or the keyboard opens the
  * picker (camera and library on phones); a dropped photo is put into the same
- * file input, so Save processes and uploads it the same way.
+ * file input, so Save processes and uploads it the same way. The chosen
+ * photo shows in the area straight away.
  */
 export function PhotoDropArea({
   label,
@@ -40,6 +42,37 @@ export function PhotoDropArea({
   const [dragging, setDragging] = useState(false);
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
+  const [preview, setPreview] = useState("");
+  const [previewing, setPreviewing] = useState(false);
+  // Only the latest choice may set the preview (HEIC takes a moment).
+  const choice = useRef(0);
+
+  useEffect(() => () => URL.revokeObjectURL(preview), [preview]);
+
+  function show(file: File | undefined) {
+    const current = ++choice.current;
+    setError("");
+    setFileName(file?.name ?? "");
+    setPreview("");
+    setPreviewing(Boolean(file));
+    if (!file) return;
+    previewPhoto(file).then(
+      (url) => {
+        if (current !== choice.current) return URL.revokeObjectURL(url);
+        setPreview(url);
+        setPreviewing(false);
+      },
+      (cause) => {
+        if (current !== choice.current) return;
+        setPreviewing(false);
+        setError(
+          cause instanceof ImageError
+            ? cause.message
+            : "Couldn't show this photo. Try another one.",
+        );
+      },
+    );
+  }
 
   // A file dropped next to the area would make the browser open it and lose the form.
   useEffect(() => {
@@ -100,7 +133,21 @@ export function PhotoDropArea({
           dragging && "border-brand bg-accent",
         )}
       >
-        {fileName ? (
+        {preview ? (
+          <Image
+            src={preview}
+            alt={`Chosen photo: ${fileName}`}
+            width={192}
+            height={192}
+            unoptimized
+            className="max-h-48 w-auto rounded-md object-contain"
+          />
+        ) : previewing ? (
+          <LoaderCircle
+            aria-hidden
+            className="size-6 animate-spin text-muted-foreground"
+          />
+        ) : fileName ? (
           <CircleCheck aria-hidden className="size-6 text-brand" />
         ) : (
           <ImagePlus aria-hidden className="size-6 text-muted-foreground" />
@@ -122,10 +169,7 @@ export function PhotoDropArea({
           accept="image/*,.heic,.heif"
           required={required}
           aria-describedby="photo-hint"
-          onChange={(event) => {
-            setError("");
-            setFileName(event.currentTarget.files?.[0]?.name ?? "");
-          }}
+          onChange={(event) => show(event.currentTarget.files?.[0])}
           className="sr-only"
         />
       </div>

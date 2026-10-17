@@ -1,9 +1,20 @@
-import { createEvent, fireEvent, render, screen } from "@testing-library/react";
+import {
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { toast } from "sonner";
 import { beforeEach, expect, it, vi } from "vitest";
 import { PhotoDropArea, pickDroppedPhoto } from "./photo-drop-area";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+const { previewPhoto } = vi.hoisted(() => ({ previewPhoto: vi.fn() }));
+vi.mock("@/lib/images/prepare", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/images/prepare")>()),
+  previewPhoto,
+}));
 
 const jpeg = new File(["a"], "shirt.jpg", { type: "image/jpeg" });
 const heic = new File(["a"], "IMG_1.HEIC", { type: "" });
@@ -19,6 +30,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   assigned = undefined;
   vi.stubGlobal("DataTransfer", FakeTransfer);
+  previewPhoto.mockImplementation(async (file: File) => `blob:${file.name}`);
+  URL.revokeObjectURL = vi.fn();
 });
 
 function renderArea() {
@@ -98,4 +111,43 @@ it("stops the browser opening files dropped next to the area", () => {
   Object.defineProperty(event, "dataTransfer", { value: { types: ["Files"] } });
   window.dispatchEvent(event);
   expect(event.defaultPrevented).toBe(true);
+});
+
+it("shows the chosen photo straight away", async () => {
+  const { area } = renderArea();
+  drag(area, "drop", [jpeg]);
+  const image = await screen.findByRole("img", {
+    name: "Chosen photo: shirt.jpg",
+  });
+  expect(image).toHaveAttribute("src", "blob:shirt.jpg");
+  expect(previewPhoto).toHaveBeenCalledWith(jpeg);
+});
+
+it("shows only the latest photo when one is slow to convert", async () => {
+  let finishHeic: (url: string) => void = () => {};
+  previewPhoto.mockImplementationOnce(
+    () => new Promise((resolve) => (finishHeic = resolve)),
+  );
+  const { area } = renderArea();
+  drag(area, "drop", [heic]);
+  drag(area, "drop", [jpeg]);
+  await screen.findByRole("img", { name: "Chosen photo: shirt.jpg" });
+
+  finishHeic("blob:heic");
+  await waitFor(() =>
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:heic"),
+  );
+  expect(screen.getByRole("img", { name: /Chosen photo/ })).toHaveAttribute(
+    "src",
+    "blob:shirt.jpg",
+  );
+});
+
+it("says when a chosen photo can't be shown", async () => {
+  previewPhoto.mockRejectedValueOnce(new Error("broken"));
+  const { area } = renderArea();
+  drag(area, "drop", [heic]);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Couldn't show this photo",
+  );
 });
